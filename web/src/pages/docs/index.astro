@@ -1,0 +1,33 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+
+const all = await getCollection('docs');
+const sorted = all.sort((a, b) => a.id.localeCompare(b.id));
+
+const titles: Record<string, { title: string; summary: string }> = {
+  '01-meaning-clarity': { title: '1장. 의미 전달이 본질', summary: '왜 한자어 제거가 답이 아닌가. 의미가 잘 전달되는 글의 조건' },
+  '02-clarity-symptoms': { title: '2장. 명료성을 가리는 6가지 증상', summary: '추상도·정보 밀도·단언·핵심 동사·메타·주어-서술어 거리' },
+  '03-ai-cliche': { title: '3장. AI 한국어가 흐려지는 이유', summary: '수사 클리셰(A)와 포맷 클리셰(B)' },
+  '04-translationese': { title: '4장. 표면 어색함', summary: '구조 번역체(C), 어휘 직역(D), 격 어색함(E)' },
+  '05-lexicon': { title: '5장. 어휘 사전과 판단 기준', summary: '한자어와 고유어, 외래어 정책, 단어 직역 사전' },
+};
+
+const base = import.meta.env.BASE_URL;
+---
+<Base title="지침 — korean-clarity" description="한국어 명료성 도구의 5장 지침">
+  <p class="tagline">한국어 글쓰기 지침</p>
+  <p class="sub">의미 명료성을 본질로 두고 표면 어색함까지 다룬 5장.</p>
+
+  <ul class="docs-list">
+    {sorted.map((entry) => {
+      const meta = titles[entry.id] ?? { title: entry.id, summary: '' };
+      return (
+        <li>
+          <a href={`${base}docs/${entry.id}/`}>{meta.title}</a>
+          <p>{meta.summary}</p>
+        </li>
+      );
+    })}
+  </ul>
+</Base>

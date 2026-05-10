@@ -1,0 +1,10 @@
+---
+import Base from '../layouts/Base.astro';
+import Analyzer from '../components/Analyzer.tsx';
+---
+<Base>
+  <p class="tagline">의미가 잘 전달되는 한국어. <em>AI 냄새는 빼고.</em></p>
+  <p class="sub">표면 클리셰 6종과 의미 명료성 6지표로 한국어 글을 진단합니다. 룰 기반, 결정적, 무료.</p>
+
+  <Analyzer client:load />
+</Base>

@@ -1,0 +1,23 @@
+{
+  "name": "korean-clarity",
+  "private": true,
+  "version": "0.1.0",
+  "description": "AI가 쓴 듯한 한국어를 잡아내고 다듬는 도구·지침 모음",
+  "type": "module",
+  "packageManager": "pnpm@10.11.1",
+  "scripts": {
+    "dev": "pnpm -F @korean-clarity/web dev",
+    "build": "pnpm -r build",
+    "test": "pnpm -F @korean-clarity/analyzer test",
+    "test:analyzer": "pnpm -F @korean-clarity/analyzer test",
+    "install-skills": "node scripts/install-skills.mjs",
+    "format": "prettier --write '**/*.{ts,tsx,js,mjs,json,md,astro}'"
+  },
+  "devDependencies": {
+    "prettier": "^3.4.2",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

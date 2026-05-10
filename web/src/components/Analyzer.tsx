@@ -1,0 +1,201 @@
+import { analyze, mergeOverlappingSpans, type AnalyzeResult, type CategoryGroup, type Mode, type Violation } from '@korean-clarity/analyzer';
+import { useEffect, useMemo, useState } from 'react';
+
+const SAMPLE = `이 솔루션의 핵심은 단순한 기능 개선이 아니라, 사용자 경험에 대한 근본적인 재정의에 있습니다. 다음과 같은 혁신적인 접근을 통해 효율성을 극대화할 수 있습니다:
+
+- 데이터 기반의 의사결정 프로세스 구축
+- 사용자 중심의 인터페이스 설계
+- 지속 가능한 성장 모델의 정립
+
+결론적으로, 본 솔루션은 시장의 변화에 능동적으로 대응할 수 있는 전략적 토대를 제공합니다.`;
+
+const CATEGORIES: { key: 'ALL' | CategoryGroup; label: string; dot?: string }[] = [
+  { key: 'ALL', label: '전체' },
+  { key: 'A', label: 'A 수사', dot: '#d97706' },
+  { key: 'B', label: 'B 포맷', dot: '#6366f1' },
+  { key: 'C', label: 'C 구조', dot: '#dc2626' },
+  { key: 'D', label: 'D 직역', dot: '#2563eb' },
+  { key: 'E', label: 'E 격', dot: '#71717a' },
+  { key: 'F', label: 'F 명료성', dot: '#ca8a04' },
+];
+
+function escapeHtml(s: string): string {
+  return s.replace(/[&<>"']/g, (c) =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string),
+  );
+}
+
+function highlightedHtml(text: string, violations: Violation[], activeCat: 'ALL' | CategoryGroup): string {
+  const merged = mergeOverlappingSpans(violations);
+  let out = '';
+  let cur = 0;
+  for (const v of merged) {
+    out += escapeHtml(text.slice(cur, v.span.start));
+    const dim = activeCat !== 'ALL' && v.group !== activeCat ? ' dim' : '';
+    out += `<span class="hl ${v.group.toLowerCase()}${dim}" title="${escapeHtml(`${v.ruleId} — ${v.message}`)}">${escapeHtml(text.slice(v.span.start, v.span.end))}</span>`;
+    cur = v.span.end;
+  }
+  out += escapeHtml(text.slice(cur));
+  return out;
+}
+
+function severityRank(s: string): number {
+  return s === 'high' ? 0 : s === 'medium' ? 1 : 2;
+}
+function sevClass(s: string): string {
+  return s === 'high' ? 'high' : s === 'medium' ? 'med' : 'low';
+}
+function sevLabel(s: string): string {
+  return s === 'high' ? '높음' : s === 'medium' ? '중간' : '낮음';
+}
+
+function aiLabel(score: number): string {
+  if (score >= 70) return '높음 — AI가 쓴 글의 전형적 패턴이 짙음';
+  if (score >= 40) return '중간 — 부분적으로 AI 클리셰 감지';
+  return '낮음 — 표면 클리셰가 적음';
+}
+function clarityLabel(score: number): string {
+  if (score >= 70) return '높음 — 의미 전달이 또렷함';
+  if (score >= 40) return '중간 — 추상도와 메타 발화가 적당히 섞임';
+  return '낮음 — 추상명사·메타 발화·완충 표현이 의미를 가림';
+}
+
+export default function Analyzer() {
+  const [text, setText] = useState<string>(SAMPLE);
+  const [mode, setMode] = useState<Mode>('full');
+  const [activeCat, setActiveCat] = useState<'ALL' | CategoryGroup>('ALL');
+
+  const result = useMemo<AnalyzeResult>(() => analyze(text, { mode }), [text, mode]);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+        // textarea reevaluates via state already
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
+
+  const filteredViolations = useMemo(() => {
+    const base = activeCat === 'ALL' ? result.violations : result.violations.filter((v) => v.group === activeCat);
+    return [...base].sort((a, b) => severityRank(a.severity) - severityRank(b.severity) || a.span.start - b.span.start);
+  }, [result.violations, activeCat]);
+
+  const counts = result.scores.counts;
+  const dCount = counts.D1 + counts.D2;
+
+  return (
+    <>
+      <section className="input-card">
+        <div className="mode-row">
+          <button
+            className={`mode${mode === 'full' ? ' active' : ''}`}
+            onClick={() => setMode('full')}
+          >
+            본문 모드
+          </button>
+          <button
+            className={`mode${mode === 'label' ? ' active' : ''}`}
+            onClick={() => setMode('label')}
+          >
+            표제·라벨 모드
+          </button>
+        </div>
+        <textarea
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+        />
+        <div className="actions">
+          <span className="hint">텍스트는 브라우저 안에서만 처리됩니다. 입력 즉시 분석됩니다.</span>
+          <span className="hint" style={{ color: 'var(--ink-2)' }}>{text.length}자</span>
+        </div>
+      </section>
+
+      <section className="scores">
+        <div className="score-card ai-score">
+          <h3>AI 냄새 지수</h3>
+          <div className="num">
+            {result.scores.ai}<small>/100</small>
+          </div>
+          <div className="bar"><div className="bar-fill" style={{ width: result.scores.ai + '%' }} /></div>
+          <div className="label">{aiLabel(result.scores.ai)}</div>
+        </div>
+        <div className="score-card clarity-score">
+          <h3>명료성 지수</h3>
+          <div className="num">
+            {result.scores.clarity}<small>/100</small>
+          </div>
+          <div className="bar"><div className="bar-fill" style={{ width: result.scores.clarity + '%' }} /></div>
+          <div className="label">{clarityLabel(result.scores.clarity)}</div>
+        </div>
+      </section>
+
+      <div className="result-grid">
+        <section className="panel">
+          <h2>원문 하이라이트</h2>
+          <div
+            className="source-text"
+            dangerouslySetInnerHTML={{ __html: highlightedHtml(text, result.violations, activeCat) }}
+          />
+        </section>
+
+        <section className="panel">
+          <h2>카테고리별 위반</h2>
+          <div className="tabs">
+            {CATEGORIES.map((c) => {
+              const cnt = c.key === 'ALL'
+                ? Object.values(counts).reduce((a, b) => a + b, 0)
+                : c.key === 'D'
+                  ? dCount
+                  : counts[c.key as keyof typeof counts];
+              return (
+                <button
+                  key={c.key}
+                  className={`tab${activeCat === c.key ? ' active' : ''}`}
+                  onClick={() => setActiveCat(c.key)}
+                >
+                  {c.dot && <span className="dot" style={{ background: c.dot }} />}
+                  {c.label}
+                  <span className="count">{cnt}</span>
+                </button>
+              );
+            })}
+          </div>
+          {filteredViolations.length === 0 ? (
+            <div className="empty">위반 없음</div>
+          ) : (
+            <ul className="violations">
+              {filteredViolations.map((v, idx) => (
+                <li className="v" key={`${v.ruleId}-${v.span.start}-${idx}`}>
+                  <div className="v-head">
+                    <span className="v-id">{v.ruleId}</span>
+                    <span className={`sev ${sevClass(v.severity)}`}>{sevLabel(v.severity)}</span>
+                  </div>
+                  <div className="quote">{v.quote}</div>
+                  <div className="msg">{v.message}</div>
+                  {v.suggestion && <div className="sug">{v.suggestion}</div>}
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      </div>
+
+      <section className="prescription">
+        <h2>이 글의 핵심 처방</h2>
+        <ol>
+          {result.prescriptions.map((p, idx) => (
+            <li key={idx}>
+              <b>{p.title}.</b> {p.body}
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section className="disclaimer">
+        <b>이 도구가 잡지 못하는 것.</b> 룰 기반 분석기라 의미 부정합·맥락 어색·사실 오류는 잡지 못합니다. 표면 패턴과 정량 지표로 어색함의 윤곽을 보여드립니다. 최종 판단은 사람이 해주세요. v0.4부터 LLM 후속 진단(사용자 키)을 옵션으로 제공할 예정.
+      </section>
+    </>
+  );
+}

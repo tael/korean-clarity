@@ -1,0 +1,30 @@
+{
+  "name": "@korean-clarity/analyzer",
+  "version": "0.1.0",
+  "description": "한국어 명료성·AI 클리셰 룰 기반 분석기",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./rules": {
+      "import": "./dist/rules.js",
+      "types": "./dist/rules.d.ts"
+    }
+  },
+  "files": ["dist", "src", "data"],
+  "scripts": {
+    "build": "tsc",
+    "test": "node --test --import=tsx 'tests/**/*.test.ts'",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  },
+  "license": "MIT"
+}

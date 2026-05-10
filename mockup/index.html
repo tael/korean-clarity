@@ -1,0 +1,612 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>한국어 명료성 도구 — korean-clarity</title>
+<style>
+  :root {
+    --bg: #fafaf9;
+    --surface: #ffffff;
+    --ink: #18181b;
+    --ink-2: #3f3f46;
+    --muted: #71717a;
+    --line: #e4e4e7;
+    --line-2: #d4d4d8;
+    --bad: #b91c1c;
+    --good: #047857;
+    --warn: #b45309;
+    --cat-a: #fef3c7;
+    --cat-b: #e0e7ff;
+    --cat-c: #fee2e2;
+    --cat-d: #dbeafe;
+    --cat-e: #f3f4f6;
+    --cat-f: #fef9c3;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    line-height: 1.6;
+    font-feature-settings: "ss01", "tnum";
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 32px 24px 80px; }
+
+  header.site {
+    display: flex; align-items: baseline; justify-content: space-between;
+    border-bottom: 1px solid var(--line); padding-bottom: 16px; margin-bottom: 28px;
+  }
+  header.site h1 { font-size: 17px; font-weight: 600; letter-spacing: -0.01em; margin: 0; }
+  header.site h1 small { font-weight: 400; color: var(--muted); margin-left: 12px; font-size: 13px; }
+  header.site nav a { font-size: 13px; color: var(--muted); text-decoration: none; margin-left: 18px; }
+  header.site nav a:hover { color: var(--ink); }
+
+  .tagline { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; margin: 0 0 8px; }
+  .tagline em { font-style: normal; color: var(--good); }
+  .sub { color: var(--muted); font-size: 14px; margin: 0 0 28px; }
+
+  .input-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 24px;
+  }
+  .mode-row { display: flex; gap: 6px; margin-bottom: 12px; }
+  .mode {
+    font-size: 12px; padding: 5px 10px; border-radius: 6px;
+    border: 1px solid var(--line); color: var(--muted); background: #fff;
+    cursor: pointer; font-family: inherit;
+  }
+  .mode.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+  textarea {
+    width: 100%; min-height: 160px; padding: 12px;
+    border: 1px solid var(--line); border-radius: 8px;
+    font-family: inherit; font-size: 14px; line-height: 1.7; color: var(--ink);
+    resize: vertical; background: #fff;
+  }
+  .actions { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
+  .actions .hint { font-size: 12px; color: var(--muted); }
+  button.primary {
+    background: var(--ink); color: #fff; border: 0; padding: 8px 16px;
+    border-radius: 6px; font-size: 13px; cursor: pointer; font-weight: 500;
+    font-family: inherit;
+  }
+  button.primary:hover { background: #000; }
+
+  .scores { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .score-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 18px 20px;
+  }
+  .score-card h3 { font-size: 13px; font-weight: 500; color: var(--muted); margin: 0 0 6px; }
+  .score-card .num { font-size: 36px; font-weight: 700; letter-spacing: -0.03em; line-height: 1.1; }
+  .score-card .num small { font-size: 14px; font-weight: 400; color: var(--muted); margin-left: 4px; }
+  .score-card .bar {
+    height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; margin-top: 12px;
+  }
+  .score-card .bar-fill { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
+  .score-card .label { font-size: 12px; color: var(--muted); margin-top: 8px; }
+
+  .ai-score .num { color: var(--bad); }
+  .ai-score .bar-fill { background: var(--bad); }
+  .clarity-score .num { color: var(--good); }
+  .clarity-score .bar-fill { background: var(--good); }
+
+  .result-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px;
+  }
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 18px;
+  }
+  .panel h2 {
+    font-size: 13px; font-weight: 600; margin: 0 0 14px;
+    color: var(--ink-2); letter-spacing: 0;
+  }
+
+  .source-text {
+    font-size: 14px; line-height: 1.85; color: var(--ink);
+    white-space: pre-wrap; word-break: break-word;
+  }
+  .hl { padding: 1px 3px; border-radius: 3px; border-bottom: 1.5px solid; cursor: help; }
+  .hl.a { background: var(--cat-a); border-color: #d97706; }
+  .hl.b { background: var(--cat-b); border-color: #6366f1; }
+  .hl.c { background: var(--cat-c); border-color: #dc2626; }
+  .hl.d { background: var(--cat-d); border-color: #2563eb; }
+  .hl.e { background: var(--cat-e); border-color: #71717a; }
+  .hl.f { background: var(--cat-f); border-color: #ca8a04; }
+  .hl.dim { opacity: 0.25; filter: saturate(0.4); }
+
+  .tabs { display: flex; gap: 2px; margin-bottom: 14px; flex-wrap: wrap; border-bottom: 1px solid var(--line); }
+  .tab {
+    font-size: 12px; padding: 7px 11px; border: 0; background: transparent;
+    color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent;
+    margin-bottom: -1px; font-family: inherit;
+  }
+  .tab .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
+  .tab.active { color: var(--ink); border-bottom-color: var(--ink); font-weight: 600; }
+  .tab .count { color: var(--muted); margin-left: 4px; font-weight: 400; }
+
+  .violations { list-style: none; padding: 0; margin: 0; max-height: 480px; overflow-y: auto; }
+  .v {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    background: #fff;
+  }
+  .v .v-head {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; gap: 8px;
+  }
+  .v .v-id { font-size: 11px; color: var(--muted); font-family: ui-monospace, "SF Mono", monospace; }
+  .v .sev {
+    font-size: 10px; padding: 2px 6px; border-radius: 3px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.04em; flex-shrink: 0;
+  }
+  .v .sev.high { background: #fee2e2; color: #b91c1c; }
+  .v .sev.med  { background: #fef3c7; color: #b45309; }
+  .v .sev.low  { background: #f3f4f6; color: #71717a; }
+
+  .v .quote {
+    font-size: 13px; padding: 6px 8px; border-left: 2px solid var(--line-2);
+    color: var(--ink-2); background: #fafafa; border-radius: 0 4px 4px 0;
+    margin-bottom: 6px; word-break: break-all;
+  }
+  .v .msg { font-size: 13px; color: var(--ink-2); margin-bottom: 4px; }
+  .v .sug { font-size: 13px; color: var(--good); }
+  .v .sug::before { content: "→ "; color: var(--muted); }
+
+  .empty { font-size: 13px; color: var(--muted); padding: 24px 8px; text-align: center; }
+
+  .prescription {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .prescription h2 { font-size: 14px; font-weight: 600; margin: 0 0 14px; }
+  .prescription ol { margin: 0; padding-left: 22px; }
+  .prescription li { font-size: 14px; line-height: 1.7; color: var(--ink-2); margin-bottom: 6px; }
+  .prescription li b { color: var(--ink); font-weight: 600; }
+
+  .disclaimer {
+    font-size: 12px; color: var(--muted); line-height: 1.6;
+    border-top: 1px solid var(--line); padding-top: 16px;
+  }
+  .disclaimer b { color: var(--ink-2); font-weight: 600; }
+
+  @media (max-width: 760px) {
+    .scores { grid-template-columns: 1fr; }
+    .result-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="site">
+    <h1>한국어 명료성 도구 <small>korean-clarity</small></h1>
+    <nav>
+      <a href="#">분석기</a>
+      <a href="#">지침</a>
+      <a href="#">사전</a>
+      <a href="#">GitHub</a>
+    </nav>
+  </header>
+
+  <p class="tagline">의미가 잘 전달되는 한국어. <em>AI 냄새는 빼고.</em></p>
+  <p class="sub">표면 클리셰 6종과 의미 명료성 6지표로 한국어 글을 진단합니다. 룰 기반, 결정적, 무료.</p>
+
+  <section class="input-card">
+    <div class="mode-row">
+      <button class="mode active" data-mode="full">본문 모드</button>
+      <button class="mode" data-mode="label">표제·라벨 모드</button>
+    </div>
+    <textarea id="input-text">이 솔루션의 핵심은 단순한 기능 개선이 아니라, 사용자 경험에 대한 근본적인 재정의에 있습니다. 다음과 같은 혁신적인 접근을 통해 효율성을 극대화할 수 있습니다:
+
+- 데이터 기반의 의사결정 프로세스 구축
+- 사용자 중심의 인터페이스 설계
+- 지속 가능한 성장 모델의 정립
+
+결론적으로, 본 솔루션은 시장의 변화에 능동적으로 대응할 수 있는 전략적 토대를 제공합니다.</textarea>
+    <div class="actions">
+      <span class="hint">붙여넣고 분석. 텍스트는 브라우저 안에서만 처리됩니다.</span>
+      <button id="analyze-btn" class="primary">분석</button>
+    </div>
+  </section>
+
+  <section class="scores">
+    <div class="score-card ai-score">
+      <h3>AI 냄새 지수</h3>
+      <div class="num"><span id="ai-num">0</span><small>/100</small></div>
+      <div class="bar"><div id="ai-bar" class="bar-fill" style="width:0%"></div></div>
+      <div id="ai-label" class="label">분석 대기</div>
+    </div>
+    <div class="score-card clarity-score">
+      <h3>명료성 지수</h3>
+      <div class="num"><span id="clarity-num">0</span><small>/100</small></div>
+      <div class="bar"><div id="clarity-bar" class="bar-fill" style="width:0%"></div></div>
+      <div id="clarity-label" class="label">분석 대기</div>
+    </div>
+  </section>
+
+  <div class="result-grid">
+
+    <section class="panel">
+      <h2>원문 하이라이트</h2>
+      <div id="source-text" class="source-text"></div>
+    </section>
+
+    <section class="panel">
+      <h2>카테고리별 위반</h2>
+      <div id="tabs" class="tabs">
+        <button class="tab active" data-cat="ALL">전체<span class="count" id="cnt-ALL">0</span></button>
+        <button class="tab" data-cat="A"><span class="dot" style="background:#d97706"></span>A 수사<span class="count" id="cnt-A">0</span></button>
+        <button class="tab" data-cat="B"><span class="dot" style="background:#6366f1"></span>B 포맷<span class="count" id="cnt-B">0</span></button>
+        <button class="tab" data-cat="C"><span class="dot" style="background:#dc2626"></span>C 구조<span class="count" id="cnt-C">0</span></button>
+        <button class="tab" data-cat="D"><span class="dot" style="background:#2563eb"></span>D 직역<span class="count" id="cnt-D">0</span></button>
+        <button class="tab" data-cat="E"><span class="dot" style="background:#71717a"></span>E 격<span class="count" id="cnt-E">0</span></button>
+        <button class="tab" data-cat="F"><span class="dot" style="background:#ca8a04"></span>F 명료성<span class="count" id="cnt-F">0</span></button>
+      </div>
+      <ul id="violations" class="violations"></ul>
+    </section>
+  </div>
+
+  <section class="prescription">
+    <h2>이 글의 핵심 처방</h2>
+    <ol id="prescription"></ol>
+  </section>
+
+  <section class="disclaimer">
+    <b>이 도구가 잡지 못하는 것.</b> 룰 기반 분석기라 의미 부정합·맥락 어색·사실 오류는 잡지 못합니다. 표면 패턴과 정량 지표로 어색함의 윤곽을 보여드립니다. 최종 판단은 사람이 해주세요. v0.4부터 LLM 후속 진단(사용자 키)을 옵션으로 제공할 예정.
+  </section>
+
+</div>
+
+<script>
+// ============================================================
+// korean-clarity v0.1 (mockup) — 인라인 룰 분석기
+// 정규식 + 사전 기반. 형태소 분석 없음. v0.2에서 kiwi-wasm 통합 예정.
+// ============================================================
+
+const RULES_REGEX = {
+  A: [
+    { id: 'A.emphasis_opener', re: /(?:^|[\s,.])(핵심은|중요한 것은|중요한 건|주목할 점은|주목해야 할 점은|한 가지 분명한 건|사실은|문제는)/g, sev: 'high', msg: '강조 도입어. AI가 도입부를 무겁게 내리는 전형 패턴', sug: '곧장 본문으로. 도입어 없이 단언' },
+    { id: 'A.contrast_rhetoric', re: /(?:단순한 )?[가-힣A-Za-z0-9 ]{1,20}(?:이|가)\s*아니라/g, sev: 'high', msg: '"X가 아니라 Y" 대조 수사. Y가 추상명사면 의미 운반 거의 없음', sug: 'Y만 단언으로 풀어쓰기' },
+    { id: 'A.summative_closer', re: /(?:^|[\s,.])(결론적으로|결국 핵심은|한마디로|정리하자면|요약하자면|요약하면)/g, sev: 'high', msg: '수렴 마무리. 본문이 이미 결론으로 향하고 있을 때 군더더기', sug: '삭제. 다음 문장이 결론임을 직접 말함' },
+    { id: 'A.precision_claim', re: /(정확히 말하면|엄밀히 말해|사실 더 정확히는)/g, sev: 'medium', msg: '정정 수사. 앞 문장 자체가 부정확하다는 신호', sug: '한 번에 정확하게 말하기' },
+    { id: 'A.meta_response', re: /(좋은 질문(?:입니다|이에요)|흥미로운 지점(?:입니다|이에요)|맞습니다, 그리고)/g, sev: 'medium', msg: '메타 발화. 응답 자체에 대한 코멘트라 본문이 아님', sug: '삭제' },
+  ],
+  B: [
+    { id: 'B.colon_title', re: /다음과 같(?:은|이|습니다|아요)/g, sev: 'medium', msg: '"다음과 같이" 콜론 제목 양식. AI 출력 형식의 상징', sug: '제목 없이 바로 내용. 또는 한 문장으로 풀어쓰기' },
+    { id: 'B.tilde', re: /(?<=[가-힣0-9])\s*~\s*(?=[가-힣0-9])/g, sev: 'low', msg: '물결표 범위. 한국어 리듬과 안 맞고 일부 렌더러에서 취소선', sug: '"에서" 또는 하이픈으로' },
+    { id: 'B.em_dash', re: /—/g, sev: 'low', msg: '엠대시. 영어 문장 부호라 한국어에 이질', sug: '쉼표·괄호·마침표로' },
+  ],
+  C: [
+    { id: 'C.passive_chain', re: /(되어지|되어진|어지고 있|어지게 된)/g, sev: 'high', msg: '이중피동. 한국어가 가장 싫어하는 번역체', sug: '단순 피동(되다) 또는 능동' },
+    { id: 'C.by_passive', re: /(?:에 의해|에 의하여)/g, sev: 'high', msg: '"~에 의해" 수동문. 영어 by의 직역', sug: '능동형 "X가 ~한다"로' },
+    { id: 'C.have_have', re: /를 가지고 있|을 가지고 있/g, sev: 'high', msg: '"~을 가지고 있다". 영어 have의 직역', sug: '"~이 있다"' },
+  ],
+  D1: [
+    { id: 'D1.locating', re: /위치하고 있/g, sev: 'medium', msg: '"위치하고 있다"는 "있다"의 부풀림', sug: '"있다"' },
+    { id: 'D1.about', re: /에 대한 |에 대하여/g, sev: 'medium', msg: '"~에 대한". 영어 about·on의 직역', sug: '을·를로 처리하거나 생략' },
+    { id: 'D1.via', re: /을 통해|를 통해/g, sev: 'low', msg: '"~을 통해". through의 직역. 남용 시 어색', sug: '"~로" 또는 "~에서"' },
+    { id: 'D1.from', re: /로부터 /g, sev: 'medium', msg: '"~로부터". from의 직역', sug: '"~에서" 또는 "~에게"' },
+    { id: 'D1.in_doing', re: /함에 있어/g, sev: 'high', msg: '"함에 있어서". 일본·영어 직역', sug: '"~할 때"' },
+  ],
+  E: [
+    { id: 'E.eui_chain', re: /[가-힣]+의\s+[가-힣]+의/g, sev: 'medium', msg: '"~의" 연속. 영어 of-of 직역', sug: '풀어쓰기. 한 번 끊어서' },
+    { id: 'E.suffix_jeok', re: /[가-힣]적(?:인|으로|인 것)/g, sev: 'low', msg: '~적 (일본식 접미사)', sug: '풀어쓸 수 있으면 풀기' },
+    { id: 'E.suffix_seong', re: /[가-힣]성(?:을|이|은|의)/g, sev: 'low', msg: '~성 (추상명사화)', sug: '동사로 풀거나 구체로 내려가기' },
+    { id: 'E.intent_eomi', re: /해보겠(?:어요|습니다)/g, sev: 'medium', msg: '의도형 어미. 행동형이 자연스러움', sug: '"할게요" 또는 "합니다"' },
+  ],
+  F: [
+    { id: 'F.abstract_verbalization', re: /(재정의|재설정|재정립|정립|구축|확장|강화|극대화|최적화|활성화|구체화|정교화|고도화)(?:에|을|를|이|가|하)/g, sev: 'medium', msg: '추상명사 동작화. "재정의·구축·정립" 같은 한자어가 의미를 가림', sug: '구체 동사로 내려가기 (무엇을 어떻게)' },
+    { id: 'F.hedge_softener', re: /(?:라고 할 수 있|인 것 같|인 것으로 보|일 수도)/g, sev: 'low', msg: '완충 표현. 단언이 흐려짐', sug: '단언 ("~이다", "~한다")' },
+    { id: 'F.formal_verb_chain', re: /(이루어지|만들어지|행해지|구성되어|수행되)/g, sev: 'medium', msg: '형식 동사. 의미 운반이 약한 한자어 동사 + 피동', sug: '강한 고유어 동사로 (잇다·짜다·풀다·짚다)' },
+  ],
+};
+
+const D2_LEXICON = [
+  { word: '합성기', natural: '신디사이저', context_safe: ['음성', '단백질', '화학', '효소', 'DNA'], sev: 'medium' },
+  { word: '처리기', natural: '프로세서', context_safe: ['이벤트', '문자열', '예외', '자연어'], sev: 'low' },
+  { word: '응답기', natural: '리스폰더', context_safe: ['자동', '비상'], sev: 'low' },
+  { word: '저장기', natural: '저장 장치 또는 stores', context_safe: ['혈액', '곡물'], sev: 'medium' },
+];
+
+function escapeHtml(s) {
+  return s.replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+}
+
+function catGroup(cat) {
+  if (cat === 'D1' || cat === 'D2') return 'D';
+  return cat;
+}
+
+function analyze(text, mode) {
+  const violations = [];
+  const allowOnLabelMode = ['A', 'D2'];
+
+  for (const [cat, rules] of Object.entries(RULES_REGEX)) {
+    if (mode === 'label' && !allowOnLabelMode.includes(cat) && cat !== 'A') continue;
+    for (const rule of rules) {
+      const re = new RegExp(rule.re.source, rule.re.flags);
+      let m;
+      while ((m = re.exec(text)) !== null) {
+        if (m[0].length === 0) { re.lastIndex++; continue; }
+        violations.push({
+          category: cat,
+          group: catGroup(cat),
+          ruleId: rule.id,
+          severity: rule.sev,
+          message: rule.msg,
+          suggestion: rule.sug,
+          span: { start: m.index, end: m.index + m[0].length },
+          quote: m[0].trim(),
+        });
+        if (!rule.re.flags.includes('g')) break;
+      }
+    }
+  }
+
+  if (mode === 'full' || mode === 'label') {
+    for (const entry of D2_LEXICON) {
+      let idx = -1;
+      while ((idx = text.indexOf(entry.word, idx + 1)) !== -1) {
+        const window = text.slice(Math.max(0, idx - 25), idx + entry.word.length + 25);
+        const safe = entry.context_safe.some(s => window.includes(s));
+        if (safe) continue;
+        violations.push({
+          category: 'D2',
+          group: 'D',
+          ruleId: 'D2.' + entry.word,
+          severity: entry.sev,
+          message: `"${entry.word}" — 영어 단어 직역 의심 (synthesizer/processor 류). 맥락 확인 필요`,
+          suggestion: entry.natural ? `맥락이 일반적이면 "${entry.natural}"이 자연스러움` : null,
+          span: { start: idx, end: idx + entry.word.length },
+          quote: entry.word,
+        });
+      }
+    }
+  }
+
+  return violations;
+}
+
+function computeScores(text, violations) {
+  const len = Math.max(text.length, 50);
+  const lengthFactor = len / 100;
+
+  const counts = { A:0, B:0, C:0, D1:0, D2:0, E:0, F:0 };
+  for (const v of violations) counts[v.category]++;
+
+  const aiRaw = (counts.A * 14 + counts.B * 10 + counts.D2 * 5 + counts.E * 2.5) / lengthFactor;
+  const aiScore = Math.max(0, Math.min(100, Math.round(aiRaw * 1.6)));
+
+  const fAbstractCount = (text.match(/[가-힣]+(?:성|화|적)(?:을|이|은|의|으로|인|적인)/g) || []).length;
+  const formalVerbCount = (text.match(/(?:하다|되다|이루어지|만들어지|구성되|제공하)/g) || []).length;
+  const sentenceCount = Math.max((text.match(/[.!?]\s|[\n]/g) || []).length, 1);
+
+  const abstractDensity = Math.min(1, fAbstractCount / lengthFactor / 4);
+  const fPenalty = Math.min(1, counts.F / lengthFactor / 1.5);
+  const metaPenalty = Math.min(1, counts.A / lengthFactor / 2);
+  const formalRatio = Math.min(1, formalVerbCount / Math.max(sentenceCount, 1) / 1.2);
+  const cChainPenalty = Math.min(1, counts.C / lengthFactor / 1.5);
+
+  const clarityRaw = 100 - (
+    abstractDensity * 28 +
+    fPenalty * 22 +
+    metaPenalty * 18 +
+    formalRatio * 12 +
+    cChainPenalty * 12
+  );
+  const clarityScore = Math.max(0, Math.min(100, Math.round(clarityRaw)));
+
+  return { ai: aiScore, clarity: clarityScore, counts };
+}
+
+function pickPrescriptions(violations, scores) {
+  const pres = [];
+  const groups = {};
+  for (const v of violations) {
+    groups[v.category] = (groups[v.category] || 0) + 1;
+  }
+
+  if ((groups.A || 0) >= 2) {
+    pres.push({
+      title: '대조 수사·도입어 빼기',
+      body: '"X가 아니라 Y", "핵심은…", "결론적으로" 같은 강조 수사가 본문보다 자리를 많이 차지함. Y만 단언으로 풀어쓰면 글이 짧아지고 의미가 또렷해짐.',
+    });
+  }
+  if ((groups.F || 0) >= 2) {
+    pres.push({
+      title: '한자 추상명사 동작화 줄이기',
+      body: '"재정의·구축·정립·극대화·강화" 같은 한자어 명사 + 하다 조합이 의미를 가림. "무엇을 어떻게"를 구체로 내려가기.',
+    });
+  }
+  if ((groups.B || 0) >= 1) {
+    pres.push({
+      title: '메타 형식 정리',
+      body: '"다음과 같이…할 수 있습니다:" 콜론 제목 + 글머리 + 메타 부사 묶음이 본문보다 무거움. 본문을 직접 말하기.',
+    });
+  }
+  if ((groups.E || 0) >= 3) {
+    pres.push({
+      title: '~의·~적·~성 줄이기',
+      body: '"~의" 연속과 ~적·~성 접미사가 짙어 일본식 한국어로 흐름. 풀어쓸 수 있는 자리를 동사·구체어로 바꾸기.',
+    });
+  }
+  if ((groups.C || 0) >= 1) {
+    pres.push({
+      title: '능동·단순 피동으로',
+      body: '이중피동·"에 의해" 수동·"가지고 있다" 같은 구조가 의미 흐름을 끊음. 주어를 바꾸고 능동으로.',
+    });
+  }
+  if (pres.length === 0) {
+    if (scores.clarity < 50) {
+      pres.push({ title: '명료성 점검', body: '표면 위반은 적지만 추상도가 높음. 한 문장에 의미 단위가 두 개 이상이면 쪼개기.' });
+    } else {
+      pres.push({ title: '괜찮은 글', body: 'AI 클리셰와 번역체 패턴이 거의 잡히지 않음. 명료성도 양호.' });
+    }
+  }
+  return pres.slice(0, 3);
+}
+
+function mergeOverlappingSpans(violations) {
+  const sorted = [...violations].sort((a, b) =>
+    a.span.start - b.span.start || (b.span.end - b.span.start) - (a.span.end - a.span.start)
+  );
+  const result = [];
+  let lastEnd = -1;
+  for (const v of sorted) {
+    if (v.span.start >= lastEnd) {
+      result.push(v);
+      lastEnd = v.span.end;
+    }
+  }
+  return result;
+}
+
+function renderHighlightedText(text, violations) {
+  const safe = mergeOverlappingSpans(violations);
+  let html = '';
+  let cur = 0;
+  for (const v of safe) {
+    html += escapeHtml(text.slice(cur, v.span.start));
+    const cls = `hl ${v.group.toLowerCase()}`;
+    const title = `${v.ruleId} — ${v.message}`;
+    html += `<span class="${cls}" data-cat="${v.group}" title="${escapeHtml(title)}">${escapeHtml(text.slice(v.span.start, v.span.end))}</span>`;
+    cur = v.span.end;
+  }
+  html += escapeHtml(text.slice(cur));
+  return html;
+}
+
+function severityRank(s) { return s === 'high' ? 0 : s === 'medium' ? 1 : 2; }
+function sevClass(s) { return s === 'high' ? 'high' : s === 'medium' ? 'med' : 'low'; }
+function sevLabel(s) { return s === 'high' ? '높음' : s === 'medium' ? '중간' : '낮음'; }
+
+function renderViolations(violations, activeCat) {
+  const list = document.getElementById('violations');
+  let filtered = activeCat === 'ALL'
+    ? violations
+    : violations.filter(v => v.group === activeCat);
+
+  filtered = filtered.slice().sort((a, b) =>
+    severityRank(a.severity) - severityRank(b.severity) || a.span.start - b.span.start
+  );
+
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="empty">위반 없음</div>';
+    return;
+  }
+
+  list.innerHTML = filtered.map(v => `
+    <li class="v">
+      <div class="v-head">
+        <span class="v-id">${v.ruleId}</span>
+        <span class="sev ${sevClass(v.severity)}">${sevLabel(v.severity)}</span>
+      </div>
+      <div class="quote">${escapeHtml(v.quote)}</div>
+      <div class="msg">${escapeHtml(v.message)}</div>
+      ${v.suggestion ? `<div class="sug">${escapeHtml(v.suggestion)}</div>` : ''}
+    </li>
+  `).join('');
+}
+
+function renderScores(scores) {
+  document.getElementById('ai-num').textContent = scores.ai;
+  document.getElementById('ai-bar').style.width = scores.ai + '%';
+  document.getElementById('ai-label').textContent =
+    scores.ai >= 70 ? '높음 — AI가 쓴 글의 전형적 패턴이 짙음' :
+    scores.ai >= 40 ? '중간 — 부분적으로 AI 클리셰 감지' :
+    '낮음 — 표면 클리셰가 적음';
+
+  document.getElementById('clarity-num').textContent = scores.clarity;
+  document.getElementById('clarity-bar').style.width = scores.clarity + '%';
+  document.getElementById('clarity-label').textContent =
+    scores.clarity >= 70 ? '높음 — 의미 전달이 또렷함' :
+    scores.clarity >= 40 ? '중간 — 추상도와 메타 발화가 적당히 섞임' :
+    '낮음 — 추상명사·메타 발화·완충 표현이 의미를 가림';
+
+  for (const cat of ['A','B','C','D','E','F']) {
+    const grouped = cat === 'D' ? (scores.counts.D1 + scores.counts.D2) : scores.counts[cat];
+    document.getElementById('cnt-' + cat).textContent = grouped || 0;
+  }
+  const total = Object.values(scores.counts).reduce((a,b) => a+b, 0);
+  document.getElementById('cnt-ALL').textContent = total;
+}
+
+function renderPrescription(presList) {
+  const ol = document.getElementById('prescription');
+  ol.innerHTML = presList.map(p =>
+    `<li><b>${escapeHtml(p.title)}.</b> ${escapeHtml(p.body)}</li>`
+  ).join('');
+}
+
+let state = {
+  mode: 'full',
+  activeCat: 'ALL',
+  lastViolations: [],
+};
+
+function runAnalyze() {
+  const text = document.getElementById('input-text').value;
+  if (!text.trim()) {
+    document.getElementById('source-text').innerHTML = '<div class="empty">텍스트를 입력하고 분석을 눌러주세요</div>';
+    document.getElementById('violations').innerHTML = '';
+    return;
+  }
+  const violations = analyze(text, state.mode);
+  const scores = computeScores(text, violations);
+  state.lastViolations = violations;
+
+  document.getElementById('source-text').innerHTML = renderHighlightedText(text, violations);
+  renderScores(scores);
+  renderViolations(violations, state.activeCat);
+  renderPrescription(pickPrescriptions(violations, scores));
+}
+
+document.getElementById('analyze-btn').addEventListener('click', runAnalyze);
+document.getElementById('input-text').addEventListener('keydown', (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') runAnalyze();
+});
+
+document.querySelectorAll('.mode').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.mode').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.mode = btn.dataset.mode;
+    runAnalyze();
+  });
+});
+
+document.querySelectorAll('.tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.activeCat = btn.dataset.cat;
+    renderViolations(state.lastViolations, state.activeCat);
+    document.querySelectorAll('.hl').forEach(el => {
+      if (state.activeCat === 'ALL') {
+        el.classList.remove('dim');
+      } else {
+        if (el.dataset.cat === state.activeCat) el.classList.remove('dim');
+        else el.classList.add('dim');
+      }
+    });
+  });
+});
+
+runAnalyze();
+</script>
+</body>
+</html>
