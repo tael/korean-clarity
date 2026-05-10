@@ -142,6 +142,14 @@ export const REGEX_RULES: RegexRule[] = [
     suggestion: '풀어쓰기. 한 번 끊어서',
   },
   {
+    id: 'E.eui_density',
+    category: 'E',
+    re: /[가-힣]{1,6}의\s+[가-힣]{1,8}(?:과|와|을|를|이|가|에|에서|으로|로)\s+[가-힣]{1,6}의/g,
+    severity: 'medium',
+    message: '"~의" 밀도. 한 구절에 ~의 두 번. 풀어쓸 자리',
+    suggestion: '동사로 풀거나 끊어쓰기',
+  },
+  {
     id: 'E.suffix_jeok',
     category: 'E',
     re: /[가-힣]적(?:인|으로|인 것)/g,
@@ -169,9 +177,9 @@ export const REGEX_RULES: RegexRule[] = [
   {
     id: 'F.abstract_verbalization',
     category: 'F',
-    re: /(재정의|재설정|재정립|정립|구축|확장|강화|극대화|최적화|활성화|구체화|정교화|고도화)(?:에|을|를|이|가|하)/g,
+    re: /(재정의|재설정|재정립|정립|구축|확장|강화|극대화|최적화|활성화|구체화|정교화|고도화|추진|검토|고려|수립|모색|도입|발굴|발휘|향상|증진|확보|운영)(?:에|을|를|이|가|하|해)/g,
     severity: 'medium',
-    message: '추상명사 동작화. "재정의·구축·정립" 같은 한자어가 의미를 가림',
+    message: '추상명사 동작화. "재정의·구축·정립·추진·검토·수립" 같은 한자어가 의미를 가림',
     suggestion: '구체 동사로 내려가기 (무엇을 어떻게)',
   },
   {
