@@ -60,22 +60,22 @@ function clarityLabel(score: number): string {
   return '낮음 — 추상명사·메타 발화·완충 표현이 의미를 가림';
 }
 
+function useDebounced<T>(value: T, delayMs: number): T {
+  const [debounced, setDebounced] = useState<T>(value);
+  useEffect(() => {
+    const id = setTimeout(() => setDebounced(value), delayMs);
+    return () => clearTimeout(id);
+  }, [value, delayMs]);
+  return debounced;
+}
+
 export default function Analyzer() {
   const [text, setText] = useState<string>(SAMPLE);
   const [mode, setMode] = useState<Mode>('full');
   const [activeCat, setActiveCat] = useState<'ALL' | CategoryGroup>('ALL');
 
-  const result = useMemo<AnalyzeResult>(() => analyze(text, { mode }), [text, mode]);
-
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-        // textarea reevaluates via state already
-      }
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, []);
+  const debouncedText = useDebounced(text, 250);
+  const result = useMemo<AnalyzeResult>(() => analyze(debouncedText, { mode }), [debouncedText, mode]);
 
   const filteredViolations = useMemo(() => {
     const base = activeCat === 'ALL' ? result.violations : result.violations.filter((v) => v.group === activeCat);
@@ -136,7 +136,7 @@ export default function Analyzer() {
           <h2>원문 하이라이트</h2>
           <div
             className="source-text"
-            dangerouslySetInnerHTML={{ __html: highlightedHtml(text, result.violations, activeCat) }}
+            dangerouslySetInnerHTML={{ __html: highlightedHtml(debouncedText, result.violations, activeCat) }}
           />
         </section>
 

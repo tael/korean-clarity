@@ -12,9 +12,9 @@ export const REGEX_RULES: RegexRule[] = [
   {
     id: 'A.contrast_rhetoric',
     category: 'A',
-    re: /(?:단순한 )?[가-힣A-Za-z0-9 ]{1,20}(?:이|가)\s*아니라/g,
+    re: /(?:단순한|단순히|단지|그저|그냥)\s+[가-힣A-Za-z0-9 ]{1,20}(?:이|가)\s*아니라/g,
     severity: 'high',
-    message: '"X가 아니라 Y" 대조 수사. Y가 추상명사면 의미 운반 거의 없음',
+    message: '"단순한 X가 아니라 Y" 대조 수사. Y가 추상명사면 의미 운반 거의 없음',
     suggestion: 'Y만 단언으로 풀어쓰기',
   },
   {
@@ -214,4 +214,9 @@ export const D2_LEXICON: LexiconEntry[] = [
   { word: '응답기', natural: '리스폰더', contextSafe: ['자동', '비상'], severity: 'low' },
   { word: '저장기', natural: '저장 장치', contextSafe: ['혈액', '곡물'], severity: 'medium' },
   { word: '연산기', natural: '계산기', contextSafe: ['병렬', '벡터'], severity: 'low' },
+  { word: '가공기', natural: '프로세서·머신', contextSafe: ['식품', '금속', '목재', '플라스틱'], severity: 'low' },
+  { word: '발생기', natural: '제너레이터', contextSafe: ['신호', '전기', '증기', '난수'], severity: 'low' },
+  { word: '송신기', natural: '트랜스미터', contextSafe: ['무선', '라디오', 'RF'], severity: 'low' },
+  { word: '수신기', natural: '리시버', contextSafe: ['라디오', 'GPS', '무선'], severity: 'low' },
+  { word: '변환기', natural: '컨버터', contextSafe: ['전압', '신호', '디지털', '아날로그'], severity: 'low' },
 ];
