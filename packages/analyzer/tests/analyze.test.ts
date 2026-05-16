@@ -65,6 +65,29 @@ describe('analyze', () => {
     }
   });
 
+  it('detects B.haeyo_density when haeyo ratio >= 60% over 5+ sentences', () => {
+    const haeyoHeavy = [
+      '오늘 분석 결과를 정리할게요.',
+      '데이터에 한계가 있어요.',
+      '표본이 적어서 신뢰도가 낮아요.',
+      '방향성으로만 받아들이시는 게 안전해요.',
+      '다음 단계는 추가 수집이에요.',
+      '일단 이 정도로 마무리할게요.',
+    ].join(' ');
+    const r = analyze(haeyoHeavy);
+    assert.ok(
+      r.violations.some((v) => v.ruleId === 'B.haeyo_density'),
+      'B.haeyo_density detected when all sentences end in haeyo',
+    );
+
+    const mixed = '오늘 회의에서 두 가지를 정했어요. 다음 주 월요일 9시에 시작합니다. 분기 목표는 그대로 유지합니다.';
+    const r2 = analyze(mixed);
+    assert.ok(
+      !r2.violations.some((v) => v.ruleId === 'B.haeyo_density'),
+      'B.haeyo_density NOT triggered on short or mixed text',
+    );
+  });
+
   it('detects A.meta_announce and D1.despite', () => {
     const r1 = analyze('이 기능에 대해 살펴보겠습니다. 다음으로 설명드리겠습니다.');
     assert.ok(

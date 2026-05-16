@@ -60,7 +60,16 @@ export function pickPrescriptions(violations: Violation[], scores: Scores): Pres
       body: '"재정의·구축·정립·극대화·강화" 같은 한자어 명사 + 하다 조합이 의미를 가림. "무엇을 어떻게"를 구체로 내려가기.',
     });
   }
-  if (c.B >= 1) {
+  const hasHaeyoDensity = violations.some((v) => v.ruleId === 'B.haeyo_density');
+  const hasBFormat = violations.some((v) => v.category === 'B' && v.ruleId !== 'B.haeyo_density');
+
+  if (hasHaeyoDensity) {
+    out.push({
+      title: '종결 방식 변주하기',
+      body: '해요체 종결이 절반 이상. AI가 일관된 해요체를 선호하는 경향이 그대로 드러남. "~입니다", "~임", "~함", 명사 종결로 리듬을 끊어주기.',
+    });
+  }
+  if (hasBFormat) {
     out.push({
       title: '메타 형식 정리',
       body: '"다음과 같이…할 수 있습니다:" 콜론 제목 + 글머리 + 메타 부사 묶음이 본문보다 무거움. 본문을 직접 말하기.',

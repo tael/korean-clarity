@@ -1,4 +1,4 @@
-import { runLexiconChecks, runRegexChecks } from './checkers.js';
+import { runHaeyoCheck, runLexiconChecks, runRegexChecks } from './checkers.js';
 import { mergeOverlappingSpans } from './highlight.js';
 import { computeScores, pickPrescriptions } from './score.js';
 import type { AnalyzeResult, Mode, Violation } from './types.js';
@@ -12,6 +12,7 @@ export function analyze(text: string, options: AnalyzeOptions = {}): AnalyzeResu
   const violations: Violation[] = [
     ...runRegexChecks(text, mode),
     ...runLexiconChecks(text, mode),
+    ...runHaeyoCheck(text, mode),
   ].sort((a, b) => a.span.start - b.span.start);
 
   const scores = computeScores(text, violations);
