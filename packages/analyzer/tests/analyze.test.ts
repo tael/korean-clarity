@@ -65,6 +65,20 @@ describe('analyze', () => {
     }
   });
 
+  it('detects A.meta_announce and D1.despite', () => {
+    const r1 = analyze('이 기능에 대해 살펴보겠습니다. 다음으로 설명드리겠습니다.');
+    assert.ok(
+      r1.violations.some((v) => v.ruleId === 'A.meta_announce'),
+      'A.meta_announce detected',
+    );
+
+    const r2 = analyze('어려움에도 불구하고 목표를 달성했습니다.');
+    assert.ok(
+      r2.violations.some((v) => v.ruleId === 'D1.despite'),
+      'D1.despite detected',
+    );
+  });
+
   it('detects abstract "도달" as English-direct', () => {
     const r = analyze('이 문장은 의미가 도달하지 않는다.');
     const ids = r.violations.map((v) => v.ruleId);

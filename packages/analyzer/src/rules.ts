@@ -41,6 +41,14 @@ export const REGEX_RULES: RegexRule[] = [
     message: '메타 발화. 응답 자체에 대한 코멘트라 본문이 아님',
     suggestion: '삭제',
   },
+  {
+    id: 'A.meta_announce',
+    category: 'A',
+    re: /(살펴보겠습니다|알아보겠습니다|설명드리겠습니다|설명해드리겠습니다|정리해보겠습니다|소개해드리겠습니다|알려드리겠습니다|다뤄보겠습니다|짚어보겠습니다)/g,
+    severity: 'medium',
+    message: '행동 예고. AI가 할 것을 미리 선언하는 클리셰',
+    suggestion: '선언 없이 곧장 내용으로',
+  },
 
   {
     id: 'B.colon_title',
@@ -131,6 +139,14 @@ export const REGEX_RULES: RegexRule[] = [
     severity: 'high',
     message: '"함에 있어서". 일본·영어 직역',
     suggestion: '"~할 때"',
+  },
+  {
+    id: 'D1.despite',
+    category: 'D1',
+    re: /(?:에도|임에도|음에도) 불구하고/g,
+    severity: 'medium',
+    message: '"에도 불구하고". despite의 직역. 남용 시 문장이 무거워짐',
+    suggestion: '"하지만"·"그래도"·역접 "는"으로 짧게',
   },
 
   {
@@ -227,4 +243,7 @@ export const D2_LEXICON: LexiconEntry[] = [
   { word: '송신기', natural: '트랜스미터', contextSafe: ['무선', '라디오', 'RF'], severity: 'low' },
   { word: '수신기', natural: '리시버', contextSafe: ['라디오', 'GPS', '무선'], severity: 'low' },
   { word: '변환기', natural: '컨버터', contextSafe: ['전압', '신호', '디지털', '아날로그'], severity: 'low' },
+  { word: '생성기', natural: '제너레이터', contextSafe: ['난수', '신호', '전기', 'OTP', '토큰', '보고서'], severity: 'medium' },
+  { word: '분류기', natural: '분류 모델', contextSafe: ['이메일', '문서', '텍스트', '스팸', '베이즈'], severity: 'low' },
+  { word: '인식기', natural: '인식 모델', contextSafe: ['음성', '얼굴', '필기', '문자', '패턴', '이미지'], severity: 'low' },
 ];
