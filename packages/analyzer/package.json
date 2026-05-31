@@ -19,7 +19,7 @@
   "files": ["dist", "src", "data"],
   "scripts": {
     "build": "tsc",
-    "test": "node --test --import=tsx tests/analyze.test.ts tests/eval.test.ts tests/metrics.test.ts tests/fix.test.ts",
+    "test": "node --test --import=tsx tests/analyze.test.ts tests/eval.test.ts tests/metrics.test.ts tests/fix.test.ts tests/prompt.test.ts",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {

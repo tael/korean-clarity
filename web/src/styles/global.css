@@ -215,6 +215,21 @@ button.primary:hover { background: #000; }
 .fix-before { color: var(--muted); text-decoration: line-through; }
 .fix-after { color: var(--good); font-weight: 600; }
 
+.prompt-panel { margin-top: 18px; }
+.prompt-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.copy-btn {
+  border: 1px solid var(--line); background: var(--ink); color: #fff;
+  border-radius: 6px; padding: 6px 14px; font-size: 13px; cursor: pointer;
+}
+.copy-btn:hover { opacity: 0.9; }
+.prompt-hint { font-size: 13px; color: var(--ink-2); line-height: 1.7; margin: 8px 0 12px; }
+.prompt-output {
+  width: 100%; min-height: 220px; resize: vertical;
+  border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px;
+  font-family: inherit; font-size: 13px; line-height: 1.7; color: var(--ink);
+  background: #fafafa; white-space: pre-wrap;
+}
+
 @media (max-width: 760px) {
   .scores { grid-template-columns: 1fr; }
   .result-grid { grid-template-columns: 1fr; }

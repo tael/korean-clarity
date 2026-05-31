@@ -42,6 +42,7 @@ function emptyMetrics(): Metrics {
 
 export { computeMetrics } from './metrics.js';
 export { applyFixes } from './fix.js';
+export { generatePrompt } from './prompt.js';
 export { D2_LEXICON, REGEX_RULES } from './rules.js';
 export { mergeOverlappingSpans };
 export * from './types.js';

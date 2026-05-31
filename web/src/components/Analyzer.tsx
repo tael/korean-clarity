@@ -1,4 +1,4 @@
-import { analyze, applyFixes, mergeOverlappingSpans, type AnalyzeResult, type CategoryGroup, type Mode, type Violation } from '@korean-clarity/analyzer';
+import { analyze, applyFixes, generatePrompt, mergeOverlappingSpans, type AnalyzeResult, type CategoryGroup, type Mode, type Violation } from '@korean-clarity/analyzer';
 import type { FixResult, Metrics } from '@korean-clarity/analyzer';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -90,6 +90,21 @@ export default function Analyzer() {
     () => (mode === 'full' ? applyFixes(debouncedText) : { fixed: debouncedText, applied: [], needsJudgment: [] }),
     [debouncedText, mode],
   );
+  const llmPrompt = useMemo<string>(
+    () => (mode === 'full' && debouncedText.trim().length > 0 ? generatePrompt(debouncedText, result) : ''),
+    [debouncedText, mode, result],
+  );
+  const [copied, setCopied] = useState(false);
+
+  function copyPrompt() {
+    navigator.clipboard?.writeText(llmPrompt).then(
+      () => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1500);
+      },
+      () => setCopied(false),
+    );
+  }
 
   const filteredViolations = useMemo(() => {
     const base = activeCat === 'ALL' ? result.violations : result.violations.filter((v) => v.group === activeCat);
@@ -274,8 +289,24 @@ export default function Analyzer() {
         </ol>
       </section>
 
+      {mode === 'full' && llmPrompt && (
+        <section className="panel prompt-panel">
+          <div className="prompt-head">
+            <h2>LLM 재작성 프롬프트</h2>
+            <button className="copy-btn" onClick={copyPrompt}>
+              {copied ? '복사됨' : '복사'}
+            </button>
+          </div>
+          <p className="prompt-hint">
+            문맥 판단이 필요한 교정은 룰로 못 합니다. 이 프롬프트를 ChatGPT·Claude 등에 붙여넣으면
+            원문과 진단 개선점을 바탕으로 다시 써 줍니다. 의미 보존 제약도 함께 들어 있습니다.
+          </p>
+          <textarea className="prompt-output" readOnly value={llmPrompt} />
+        </section>
+      )}
+
       <section className="disclaimer">
-        <b>이 도구가 잡지 못하는 것.</b> 룰 기반 분석기라 의미 부정합·맥락 어색·사실 오류는 잡지 못합니다. 표면 패턴과 정량 지표로 어색함의 윤곽을 보여드립니다. 최종 판단은 사람이 해주세요. v0.4부터 LLM 후속 진단(사용자 키)을 옵션으로 제공할 예정.
+        <b>이 도구가 잡지 못하는 것.</b> 룰 기반 분석기라 의미 부정합·맥락 어색·사실 오류는 잡지 못합니다. 표면 패턴과 정량 지표로 어색함의 윤곽을 보여드립니다. 맥락을 읽어 글을 다시 쓰는 건 LLM 몫이라, 위의 재작성 프롬프트로 넘겨받게 했습니다. 최종 판단은 사람이 해주세요.
       </section>
     </>
   );
