@@ -195,6 +195,26 @@ button.primary:hover { background: #000; }
 .markdown pre { background: #18181b; color: #f4f4f5; padding: 12px 16px; border-radius: 6px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
 .markdown pre code { background: none; color: inherit; padding: 0; }
 
+.metrics-panel { margin-top: 18px; }
+.metric-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.metric-chip {
+  display: inline-flex; align-items: baseline; gap: 6px;
+  border: 1px solid var(--line); border-radius: 999px;
+  padding: 4px 12px; background: #fff; font-size: 13px;
+}
+.metric-label { color: var(--muted); }
+.metric-value { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.fix-panel { margin-top: 18px; }
+.fix-note { font-size: 13px; color: var(--ink-2); margin-bottom: 12px; }
+.fix-note.judgment {
+  margin-top: 14px; padding: 10px 12px; border-left: 2px solid var(--line-2);
+  background: #fafafa; border-radius: 0 4px 4px 0; color: var(--muted);
+}
+.fix-output { background: #f6fdf9; border: 1px solid #cce9d8; margin-bottom: 14px; }
+.fix-before { color: var(--muted); text-decoration: line-through; }
+.fix-after { color: var(--good); font-weight: 600; }
+
 @media (max-width: 760px) {
   .scores { grid-template-columns: 1fr; }
   .result-grid { grid-template-columns: 1fr; }

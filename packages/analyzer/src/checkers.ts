@@ -14,13 +14,14 @@ export function runRegexChecks(text: string, mode: Mode): Violation[] {
   for (const rule of REGEX_RULES) {
     if (mode === 'label' && !LABEL_MODE_ALLOWED.has(rule.category)) continue;
     const re = new RegExp(rule.re.source, rule.re.flags);
+    const hits: Violation[] = [];
     let m: RegExpExecArray | null;
     while ((m = re.exec(text)) !== null) {
       if (m[0].length === 0) {
         re.lastIndex++;
         continue;
       }
-      out.push({
+      hits.push({
         ruleId: rule.id,
         category: rule.category,
         group: categoryGroup(rule.category),
@@ -32,6 +33,10 @@ export function runRegexChecks(text: string, mode: Mode): Violation[] {
       });
       if (!rule.re.flags.includes('g')) break;
     }
+    // 반복 임계: 한 번 나오는 건 자연스럽고 반복돼야 AI 티가 나는 패턴은
+    // 임계 미만이면 통째로 버린다. 오탐을 줄이는 결정론적 게이트.
+    if (rule.minRepeat && hits.length < rule.minRepeat) continue;
+    out.push(...hits);
   }
   return out;
 }

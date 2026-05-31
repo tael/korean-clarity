@@ -1,4 +1,4 @@
-import type { CategoryCounts, Prescription, Scores, Violation } from './types.js';
+import type { Category, CategoryCounts, Metrics, Prescription, Scores, Severity, Violation } from './types.js';
 
 export function countByCategory(violations: Violation[]): CategoryCounts {
   const counts: CategoryCounts = { A: 0, B: 0, C: 0, D1: 0, D2: 0, E: 0, F: 0 };
@@ -6,14 +6,34 @@ export function countByCategory(violations: Violation[]): CategoryCounts {
   return counts;
 }
 
+// AI 냄새에 대한 카테고리별 기여도. F는 명료성(clarity) 축이라 ai엔 0.
+// 이전 공식은 C(이중피동·에의해)와 D1(직역구)이 빠져 있었다 — 강한 번역 신호인데 0 기여였다.
+const AI_CAT_WEIGHT: Record<Category, number> = {
+  A: 16, // 수사 클리셰
+  C: 16, // 구조 번역체(이중피동 등)
+  B: 11, // 포맷 클리셰
+  D1: 9, // 표현구 직역
+  D2: 7, // 단어 직역
+  E: 5, // 격 어색
+  F: 0, // clarity 축
+};
+
+// 심각도 배수. 이전 공식은 high/medium/low를 무시하고 카테고리 카운트만 곱했다.
+const SEVERITY_MULT: Record<Severity, number> = { high: 1, medium: 0.6, low: 0.3 };
+
+const AI_GAIN = 2.3; // 가중합 → 0..100 환산 계수(표본 회귀로 보정)
+
 export function computeScores(text: string, violations: Violation[]): Scores {
   const length = Math.max(text.length, 50);
   const lengthFactor = length / 100;
   const counts = countByCategory(violations);
 
-  const aiRaw =
-    (counts.A * 18 + counts.B * 12 + counts.D2 * 6 + counts.E * 3) / lengthFactor;
-  const ai = clamp(Math.round(aiRaw * 1.8), 0, 100);
+  let aiPoints = 0;
+  for (const v of violations) {
+    aiPoints += AI_CAT_WEIGHT[v.category] * SEVERITY_MULT[v.severity];
+  }
+  const aiRaw = aiPoints / lengthFactor;
+  const ai = clamp(Math.round(aiRaw * AI_GAIN), 0, 100);
 
   const fAbstractCount = (text.match(/[가-힣]+(?:성|화|적)(?:을|이|은|의|으로|인|적인)/g) || []).length;
   const formalVerbCount = (text.match(/(?:하다|되다|이루어지|만들어지|구성되|제공하)/g) || []).length;
@@ -44,7 +64,11 @@ function clamp01(n: number): number {
   return clamp(n, 0, 1);
 }
 
-export function pickPrescriptions(violations: Violation[], scores: Scores): Prescription[] {
+export function pickPrescriptions(
+  violations: Violation[],
+  scores: Scores,
+  metrics?: Metrics,
+): Prescription[] {
   const out: Prescription[] = [];
   const c = scores.counts;
 
@@ -87,6 +111,17 @@ export function pickPrescriptions(violations: Violation[], scores: Scores): Pres
       body: '이중피동·"에 의해" 수동·"가지고 있다" 같은 구조가 의미 흐름을 끊음. 주어를 바꾸고 능동으로.',
     });
   }
+  // 통계 지표 플래그(리듬·종결 단조·문두 접속사 등)는 패턴 위반과 별개 채널이라
+  // 처방을 따로 얹는다. 위반 카테고리로 안 잡히는 문서 단위 신호를 보강.
+  const flags = metrics?.flags ?? [];
+  if (flags.length > 0 && out.length < 3) {
+    const top = flags[0]!;
+    out.push({
+      title: '리듬·다양성 손보기',
+      body: `${top.message}. ${top.suggestion}.`,
+    });
+  }
+
   if (out.length === 0) {
     if (scores.clarity < 50) {
       out.push({

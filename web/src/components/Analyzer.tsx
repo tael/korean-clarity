@@ -1,4 +1,5 @@
-import { analyze, mergeOverlappingSpans, type AnalyzeResult, type CategoryGroup, type Mode, type Violation } from '@korean-clarity/analyzer';
+import { analyze, applyFixes, mergeOverlappingSpans, type AnalyzeResult, type CategoryGroup, type Mode, type Violation } from '@korean-clarity/analyzer';
+import type { FixResult, Metrics } from '@korean-clarity/analyzer';
 import { useEffect, useMemo, useState } from 'react';
 
 const SAMPLE = `이 솔루션의 핵심은 단순한 기능 개선이 아니라, 사용자 경험에 대한 근본적인 재정의에 있습니다. 다음과 같은 혁신적인 접근을 통해 효율성을 극대화할 수 있습니다:
@@ -49,6 +50,15 @@ function sevLabel(s: string): string {
   return s === 'high' ? '높음' : s === 'medium' ? '중간' : '낮음';
 }
 
+const METRIC_CHIPS: { key: keyof Metrics; label: string; fmt: (n: number) => string }[] = [
+  { key: 'sentenceCount', label: '문장 수', fmt: (n) => String(n) },
+  { key: 'sentenceLengthStdev', label: '길이 편차', fmt: (n) => n.toFixed(1) },
+  { key: 'endingDiversity', label: '종결 다양성', fmt: (n) => n.toFixed(2) },
+  { key: 'daStreakMax', label: "'-다' 최대 연속", fmt: (n) => String(n) },
+  { key: 'commaInclusionRate', label: '쉼표 포함률', fmt: (n) => Math.round(n * 100) + '%' },
+  { key: 'connectiveOpenerRate', label: '접속사 문두율', fmt: (n) => Math.round(n * 100) + '%' },
+];
+
 function aiLabel(score: number): string {
   if (score >= 70) return '높음 — AI가 쓴 글의 전형적 패턴이 짙음';
   if (score >= 40) return '중간 — 부분적으로 AI 클리셰 감지';
@@ -76,6 +86,10 @@ export default function Analyzer() {
 
   const debouncedText = useDebounced(text, 250);
   const result = useMemo<AnalyzeResult>(() => analyze(debouncedText, { mode }), [debouncedText, mode]);
+  const fix = useMemo<FixResult>(
+    () => (mode === 'full' ? applyFixes(debouncedText) : { fixed: debouncedText, applied: [], needsJudgment: [] }),
+    [debouncedText, mode],
+  );
 
   const filteredViolations = useMemo(() => {
     const base = activeCat === 'ALL' ? result.violations : result.violations.filter((v) => v.group === activeCat);
@@ -181,6 +195,73 @@ export default function Analyzer() {
           )}
         </section>
       </div>
+
+      {mode === 'full' && result.metrics.sentenceCount > 0 && (
+        <section className="panel metrics-panel">
+          <h2>리듬·다양성 지표</h2>
+          <div className="metric-chips">
+            {METRIC_CHIPS.map((m) => (
+              <span className="metric-chip" key={m.key}>
+                <span className="metric-label">{m.label}</span>
+                <span className="metric-value">{m.fmt(result.metrics[m.key] as number)}</span>
+              </span>
+            ))}
+          </div>
+          {result.metrics.flags.length === 0 ? (
+            <div className="empty">리듬·다양성 양호 — 문장 길이·종결·접속사 분포가 자연스러움</div>
+          ) : (
+            <ul className="violations">
+              {result.metrics.flags.map((f) => (
+                <li className="v" key={f.key}>
+                  <div className="v-head">
+                    <span className="v-id">{f.key}</span>
+                    <span className={`sev ${sevClass(f.severity)}`}>{sevLabel(f.severity)}</span>
+                  </div>
+                  <div className="msg">{f.message}</div>
+                  <div className="sug">{f.suggestion}</div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
+
+      {mode === 'full' && (fix.applied.length > 0 || fix.needsJudgment.length > 0) && (
+        <section className="panel fix-panel">
+          <h2>안전 자동 교정</h2>
+          {fix.applied.length > 0 ? (
+            <>
+              <div className="fix-note">
+                문맥 없이 고쳐도 의미가 안 바뀌는 {fix.applied.length}종을 자동 교정했습니다.
+              </div>
+              <div className="source-text fix-output">{fix.fixed}</div>
+              <ul className="violations">
+                {fix.applied.map((a) => (
+                  <li className="v" key={a.ruleId}>
+                    <div className="v-head">
+                      <span className="v-id">{a.ruleId}</span>
+                      <span className="count">{a.count}곳</span>
+                    </div>
+                    <div className="msg">
+                      <span className="fix-before">{a.before}</span>
+                      {' → '}
+                      <span className="fix-after">{a.after}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : (
+            <div className="empty">자동으로 고칠 안전 패턴이 없습니다.</div>
+          )}
+          {fix.needsJudgment.length > 0 && (
+            <div className="fix-note judgment">
+              문맥 판단이 필요해 자동 교정하지 않은 규칙 {fix.needsJudgment.length}종: {fix.needsJudgment.join(', ')}.
+              이건 의미를 읽고 직접 고쳐야 합니다 — 룰이 기계적으로 치환하면 뜻이 깨집니다.
+            </div>
+          )}
+        </section>
+      )}
 
       <section className="prescription">
         <h2>이 글의 핵심 처방</h2>

@@ -11,8 +11,9 @@ describe('analyze', () => {
     assert.ok(ids.includes('A.emphasis_opener'), 'A.emphasis_opener detected');
     assert.ok(ids.includes('A.contrast_rhetoric'), 'A.contrast_rhetoric detected');
     assert.ok(ids.includes('A.summative_closer'), 'A.summative_closer detected');
-    assert.ok(ids.includes('D1.about'), 'D1.about detected');
     assert.ok(ids.includes('F.abstract_verbalization'), 'F.abstract_verbalization detected');
+    // D1.about은 minRepeat 2라 여기서 "에 대한"이 한 번뿐이면 잡히지 않는다(의도).
+    assert.ok(!ids.includes('D1.about'), 'single 에 대한 not flagged (minRepeat)');
   });
 
   it('returns 0..100 scores', () => {

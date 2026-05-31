@@ -65,6 +65,7 @@ export const REGEX_RULES: RegexRule[] = [
     severity: 'low',
     message: '물결표 범위. 한국어 리듬과 안 맞고 일부 렌더러에서 취소선',
     suggestion: '"에서" 또는 하이픈으로',
+    fix: '에서 ',
   },
   {
     id: 'B.em_dash',
@@ -85,10 +86,12 @@ export const REGEX_RULES: RegexRule[] = [
   },
   {
     id: 'C.by_passive',
+    // "에 의해" 뒤 가까이에 피동 동사(되·받·당하·지)가 따라올 때만 잡는다.
+    // im-not-ai by_passive 방식. "법에 의해 보호받는다"는 잡고, 정당한 행위자 표시는 덜 건드린다.
     category: 'C',
-    re: /(?:에 의해|에 의하여)/g,
+    re: /에\s*의(?:해|하여)\s+\S{0,12}?(?:되|받|당하|지)(?:다|었|어|ㄴ다|는다|는|ㄹ|을|던|음)/g,
     severity: 'high',
-    message: '"~에 의해" 수동문. 영어 by의 직역',
+    message: '"~에 의해 …되다" 수동문. 영어 by의 직역',
     suggestion: '능동형 "X가 ~한다"로',
   },
   {
@@ -107,14 +110,18 @@ export const REGEX_RULES: RegexRule[] = [
     severity: 'medium',
     message: '"위치하고 있다"는 "있다"의 부풀림',
     suggestion: '"있다"',
+    fix: '있',
   },
   {
     id: 'D1.about',
     category: 'D1',
-    re: /에 대한 |에 대하여/g,
+    // "에 대하여"를 "에 대해"보다 먼저 둬야 alternation이 긴 쪽을 먼저 먹는다.
+    // 뒤 공백 강제를 없애 문말 "…에 대한."도 잡는다. 한 번은 자연스러우니 2회+에서만.
+    re: /에 대하여|에 대한|에 대해서?/g,
     severity: 'medium',
-    message: '"~에 대한". 영어 about·on의 직역',
+    message: '"~에 대한/대해". 영어 about·on의 직역. 반복되면 무거워짐',
     suggestion: '을·를로 처리하거나 생략',
+    minRepeat: 2,
   },
   {
     id: 'D1.via',
@@ -123,6 +130,7 @@ export const REGEX_RULES: RegexRule[] = [
     severity: 'low',
     message: '"~을 통해". through의 직역. 남용 시 어색',
     suggestion: '"~로" 또는 "~에서"',
+    minRepeat: 2,
   },
   {
     id: 'D1.from',
@@ -139,6 +147,7 @@ export const REGEX_RULES: RegexRule[] = [
     severity: 'high',
     message: '"함에 있어서". 일본·영어 직역',
     suggestion: '"~할 때"',
+    fix: '할 때',
   },
   {
     id: 'D1.despite',
@@ -172,6 +181,7 @@ export const REGEX_RULES: RegexRule[] = [
     severity: 'low',
     message: '~적 (일본식 접미사)',
     suggestion: '풀어쓸 수 있으면 풀기',
+    minRepeat: 3,
   },
   {
     id: 'E.suffix_seong',
@@ -180,6 +190,7 @@ export const REGEX_RULES: RegexRule[] = [
     severity: 'low',
     message: '~성 (추상명사화)',
     suggestion: '동사로 풀거나 구체로 내려가기',
+    minRepeat: 3,
   },
   {
     id: 'E.intent_eomi',
@@ -229,6 +240,41 @@ export const REGEX_RULES: RegexRule[] = [
     severity: 'low',
     message: '"도달"이 추상 의미로 쓰이면 영어 직역 의심',
     suggestion: '구체 동작이면 "닿다·이르다", 의미 전달이면 "전달되다·통하다"',
+  },
+  {
+    id: 'F.degree_adverb',
+    category: 'F',
+    re: /(?:매우|정말|진짜|굉장히|대단히|극히|너무나|무척)/g,
+    severity: 'low',
+    message: '정도부사 반복. "매우·정말·굉장히"는 강조를 더하는 듯하나 의미를 안 더함',
+    suggestion: '삭제하거나 구체 수치·사례로',
+    minRepeat: 2,
+  },
+  {
+    id: 'F.formal_noun',
+    category: 'F',
+    re: /것(?:이다|입니다|이에요)/g,
+    severity: 'low',
+    message: '"~것이다" 종결 반복. 형식명사가 핵심 동사를 가림',
+    suggestion: '"~다"로 직결',
+    minRepeat: 2,
+  },
+  {
+    id: 'E.double_particle',
+    category: 'E',
+    re: /(?:에서의|에로의|으로의|에의|으로부터의|로부터의)/g,
+    severity: 'medium',
+    message: '이중 조사. "에서의·으로의"는 일본어·영어 번역체의 격 결합',
+    suggestion: '조사 하나로 풀기 ("폭격에 의해 끊어진" → "폭격으로 끊어진")',
+  },
+  {
+    id: 'B.emoji',
+    category: 'B',
+    re: /[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{2190}-\u{21FF}]/gu,
+    severity: 'low',
+    message: '이모지 남발. 에세이·리포트에서 AI 출력의 상징',
+    suggestion: '본문에서 제거. 정말 필요한 1개만',
+    minRepeat: 3,
   },
 ];
 
