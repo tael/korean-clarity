@@ -177,7 +177,7 @@ export const REGEX_RULES: RegexRule[] = [
   {
     id: 'E.suffix_jeok',
     category: 'E',
-    re: /[가-힣]적(?:인|으로|인 것)/g,
+    re: /[가-힣]+적(?:인|으로|인 것)/g,
     severity: 'low',
     message: '~적 (일본식 접미사)',
     suggestion: '풀어쓸 수 있으면 풀기',
@@ -206,8 +206,8 @@ export const REGEX_RULES: RegexRule[] = [
     category: 'F',
     re: /(재정의|재설정|재정립|정립|구축|확장|강화|극대화|최적화|활성화|구체화|정교화|고도화|추진|검토|고려|수립|모색|도입|발굴|발휘|향상|증진|확보|운영)(?:에|을|를|이|가|하|해)/g,
     severity: 'medium',
-    message: '추상명사 동작화. "재정의·구축·정립·추진·검토·수립" 같은 한자어가 의미를 가림',
-    suggestion: '구체 동사로 내려가기 (무엇을 어떻게)',
+    message: '동작을 명사로 굳혀 의미가 흐려짐. "재정의·구축·정립·추진·검토·수립" 같은 동작성 명사',
+    suggestion: '명사화만 풀어 동사로, 어근과 뜻은 유지 (재정의에 있다 → 다시 정의한다). 짜다처럼 다른 동사로 갈아치우면 의미가 바뀜',
   },
   {
     id: 'F.hedge_softener',
@@ -223,7 +223,7 @@ export const REGEX_RULES: RegexRule[] = [
     re: /(이루어지|만들어지|행해지|구성되어|수행되)/g,
     severity: 'medium',
     message: '형식 동사. 의미 운반이 약한 한자어 동사 + 피동',
-    suggestion: '강한 고유어 동사로 (잇다·짜다·풀다·짚다)',
+    suggestion: '피동을 능동으로 풀되 원래 뜻은 유지 (구성되어 있다 → 이룬다). 뜻과 안 맞는 센 동사로 갈아치우지 말 것',
   },
   {
     id: 'F.abstract_arrival',

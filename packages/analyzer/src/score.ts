@@ -81,7 +81,7 @@ export function pickPrescriptions(
   if (c.F >= 2) {
     out.push({
       title: '한자 추상명사 동작화 줄이기',
-      body: '"재정의·구축·정립·극대화·강화" 같은 한자어 명사 + 하다 조합이 의미를 가림. "무엇을 어떻게"를 구체로 내려가기.',
+      body: '"재정의·구축·정립·극대화·강화" 같은 동작성 명사 + 하다 조합이 의미를 가림. 명사화를 풀어 동사로 내려가되 어근과 뜻은 유지 (재정의에 있다 → 다시 정의한다).',
     });
   }
   const hasHaeyoDensity = violations.some((v) => v.ruleId === 'B.haeyo_density');
