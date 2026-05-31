@@ -29,9 +29,9 @@ function buildIssueLines(result: AnalyzeResult): string[] {
   for (const v of sorted) {
     if (seen.has(v.ruleId)) continue;
     seen.add(v.ruleId);
-    const quote = v.quote ? `"${v.quote}" ` : '';
+    const quote = v.quote ? `"${v.quote}": ` : '';
     const suggestion = v.suggestion ? ` 고치는 방향: ${v.suggestion}` : '';
-    lines.push(`(${CAT_LABEL[v.category]}) ${quote}— ${v.message}.${suggestion}`);
+    lines.push(`(${CAT_LABEL[v.category]}) ${quote}${v.message}.${suggestion}`);
     if (lines.length >= MAX_ISSUES) return lines;
   }
 

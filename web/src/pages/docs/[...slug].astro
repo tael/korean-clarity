@@ -13,7 +13,7 @@ export async function getStaticPaths() {
 const { entry } = Astro.props;
 const { Content } = await render(entry);
 ---
-<Base title={`${entry.id} — korean-clarity`}>
+<Base title={`${entry.id} · korean-clarity`}>
   <article class="markdown">
     <Content />
   </article>

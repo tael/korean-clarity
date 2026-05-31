@@ -33,7 +33,7 @@ function highlightedHtml(text: string, violations: Violation[], activeCat: 'ALL'
   for (const v of merged) {
     out += escapeHtml(text.slice(cur, v.span.start));
     const dim = activeCat !== 'ALL' && v.group !== activeCat ? ' dim' : '';
-    out += `<span class="hl ${v.group.toLowerCase()}${dim}" title="${escapeHtml(`${v.ruleId} — ${v.message}`)}">${escapeHtml(text.slice(v.span.start, v.span.end))}</span>`;
+    out += `<span class="hl ${v.group.toLowerCase()}${dim}" title="${escapeHtml(`${v.ruleId}: ${v.message}`)}">${escapeHtml(text.slice(v.span.start, v.span.end))}</span>`;
     cur = v.span.end;
   }
   out += escapeHtml(text.slice(cur));
@@ -60,14 +60,14 @@ const METRIC_CHIPS: { key: keyof Metrics; label: string; fmt: (n: number) => str
 ];
 
 function aiLabel(score: number): string {
-  if (score >= 70) return '높음 — AI가 쓴 글의 전형적 패턴이 짙음';
-  if (score >= 40) return '중간 — 부분적으로 AI 클리셰 감지';
-  return '낮음 — 표면 클리셰가 적음';
+  if (score >= 70) return '높음: AI가 쓴 글의 전형적 패턴이 짙음';
+  if (score >= 40) return '중간: 부분적으로 AI 클리셰 감지';
+  return '낮음: 표면 클리셰가 적음';
 }
 function clarityLabel(score: number): string {
-  if (score >= 70) return '높음 — 의미 전달이 또렷함';
-  if (score >= 40) return '중간 — 추상도와 메타 발화가 적당히 섞임';
-  return '낮음 — 추상명사·메타 발화·완충 표현이 의미를 가림';
+  if (score >= 70) return '높음: 의미 전달이 또렷함';
+  if (score >= 40) return '중간: 추상도와 메타 발화가 적당히 섞임';
+  return '낮음: 추상명사·메타 발화·완충 표현이 의미를 가림';
 }
 
 function useDebounced<T>(value: T, delayMs: number): T {
@@ -223,7 +223,7 @@ export default function Analyzer() {
             ))}
           </div>
           {result.metrics.flags.length === 0 ? (
-            <div className="empty">리듬·다양성 양호 — 문장 길이·종결·접속사 분포가 자연스러움</div>
+            <div className="empty">리듬·다양성 양호: 문장 길이·종결·접속사 분포가 자연스러움</div>
           ) : (
             <ul className="violations">
               {result.metrics.flags.map((f) => (
@@ -272,7 +272,7 @@ export default function Analyzer() {
           {fix.needsJudgment.length > 0 && (
             <div className="fix-note judgment">
               문맥 판단이 필요해 자동 교정하지 않은 규칙 {fix.needsJudgment.length}종: {fix.needsJudgment.join(', ')}.
-              이건 의미를 읽고 직접 고쳐야 합니다 — 룰이 기계적으로 치환하면 뜻이 깨집니다.
+              이건 의미를 읽고 직접 고쳐야 합니다. 룰이 기계적으로 치환하면 뜻이 깨집니다.
             </div>
           )}
         </section>

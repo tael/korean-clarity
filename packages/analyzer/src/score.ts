@@ -7,7 +7,7 @@ export function countByCategory(violations: Violation[]): CategoryCounts {
 }
 
 // AI 냄새에 대한 카테고리별 기여도. F는 명료성(clarity) 축이라 ai엔 0.
-// 이전 공식은 C(이중피동·에의해)와 D1(직역구)이 빠져 있었다 — 강한 번역 신호인데 0 기여였다.
+// 이전 공식은 C(이중피동·에의해)와 D1(직역구)이 빠져 있었다. 강한 번역 신호인데 0 기여였다.
 const AI_CAT_WEIGHT: Record<Category, number> = {
   A: 16, // 수사 클리셰
   C: 16, // 구조 번역체(이중피동 등)
