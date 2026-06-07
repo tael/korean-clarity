@@ -155,19 +155,28 @@ describe('analyze', () => {
     const flag = (text: string, word: string) =>
       analyze(text).violations.some((v) => v.ruleId === 'D2.' + word);
 
-    // 추상 동반어 동반 → 잡힘
-    assert.ok(flag('답은 두 갈래예요. 의견도 두 갈래로 갈렸다.', '갈래'), '갈래 flagged (답·의견)');
+    // 추상 동반어 동반 → 잡힘 (갈래는 역방향 모델이라 별도 테스트로 분리)
     assert.ok(flag('논의의 결이 다르다', '결'), '결 flagged (논의)');
     assert.ok(flag('두 축으로 분석하면 분명해진다', '축'), '축 flagged (분석)');
     assert.ok(flag('의미의 층위가 다르다', '층위'), '층위 flagged (의미)');
 
     // 구체 용법 → 안 잡힘 (추상 동반어 없음)
-    assert.ok(!flag('산이 두 갈래로 갈라진다', '갈래'), '갈래 not flagged (literal)');
     assert.ok(!flag('나무결이 곱다', '결'), '결 not flagged (literal)');
     assert.ok(!flag('회전축을 중심으로 돈다', '축'), '축 not flagged (literal)');
 
     // 정착어는 사전에 없음 → 절대 안 잡힘
     assert.ok(!flag('맥락을 보면 이해된다', '맥락'), '맥락 not in lexicon');
     assert.ok(!flag('다른 차원의 문제다', '차원'), '차원 not in lexicon');
+  });
+
+  it('갈래는 기본 탐지, 구체 굳은 표현만 면제(역방향 모델)', () => {
+    const flag = (t: string) => analyze(t).violations.some((v) => v.ruleId === 'D2.갈래');
+    // 동반어 유무와 무관하게 기본 탐지
+    assert.ok(flag('답은 두 갈래다'), '답은 두 갈래 flagged');
+    assert.ok(flag('두 갈래로 보면 이렇다'), '동반어 없이도 flagged');
+    assert.ok(flag('문제는 두 갈래로 나뉜다'), '동반어 없이도 flagged');
+    // 구체 굳은 표현만 면제
+    assert.ok(!flag('양 갈래 머리를 땋았다'), '양 갈래 머리 not flagged');
+    assert.ok(!flag('갈래길로 접어들었다'), '갈래길 not flagged');
   });
 });
