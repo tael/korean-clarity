@@ -42,6 +42,12 @@ export interface LexiconEntry {
   contextSafe: string[];
   /** 항목이 주면 이 메시지를 그대로 쓴다. 없으면 두 축 기본 템플릿. */
   message?: string;
+  /**
+   * positive 게이트. 지정하면 이 동반어 중 하나가 윈도우에 있어야만 잡는다.
+   * contextSafe(있으면 통과)의 반대 발상. 추상 개념과 함께 쓰일 때만 AI 티인
+   * 공간 은유(층위·결·갈래·지점·축)에 쓴다.
+   */
+  requiresAbstract?: string[];
   severity: Severity;
 }
 

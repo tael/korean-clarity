@@ -93,6 +93,7 @@ export function runLexiconChecks(text: string, _mode: Mode): Violation[] {
       const window = text.slice(Math.max(0, idx - 25), idx + entry.word.length + 25);
       const safe = entry.contextSafe.some((s) => window.includes(s));
       if (safe) continue;
+      if (entry.requiresAbstract && !entry.requiresAbstract.some((a) => window.includes(a))) continue;
       out.push({
         ruleId: 'D2.' + entry.word,
         category: 'D2',
