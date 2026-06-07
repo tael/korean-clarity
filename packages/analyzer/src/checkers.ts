@@ -93,12 +93,15 @@ export function runLexiconChecks(text: string, _mode: Mode): Violation[] {
       const window = text.slice(Math.max(0, idx - 25), idx + entry.word.length + 25);
       const safe = entry.contextSafe.some((s) => window.includes(s));
       if (safe) continue;
+      if (entry.requiresAbstract && !entry.requiresAbstract.some((a) => window.includes(a))) continue;
       out.push({
         ruleId: 'D2.' + entry.word,
         category: 'D2',
         group: 'D',
         severity: entry.severity,
-        message: `"${entry.word}": 영어 단어 직역 의심. 맥락 확인 필요`,
+        message:
+          entry.message ??
+          `"${entry.word}": 기계가 옮긴 듯한 말투. 맥락 따라 더 자연스러운 일반어가 있음`,
         suggestion: entry.natural ? `맥락이 일반적이면 "${entry.natural}"이 자연스러움` : undefined,
         span: { start: idx, end: idx + entry.word.length },
         quote: entry.word,
