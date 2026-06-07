@@ -21,6 +21,10 @@ export function runRegexChecks(text: string, mode: Mode): Violation[] {
         re.lastIndex++;
         continue;
       }
+      if (rule.excludeWords && rule.excludeWords.some((w) => m![0].startsWith(w))) {
+        if (!rule.re.flags.includes('g')) break;
+        continue;
+      }
       hits.push({
         ruleId: rule.id,
         category: rule.category,
