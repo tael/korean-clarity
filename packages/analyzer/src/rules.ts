@@ -119,7 +119,7 @@ export const REGEX_RULES: RegexRule[] = [
     // 뒤 공백 강제를 없애 문말 "…에 대한."도 잡는다. 한 번은 자연스러우니 2회+에서만.
     re: /에 대하여|에 대한|에 대해서?/g,
     severity: 'medium',
-    message: '"~에 대한/대해". 영어 about·on의 직역. 반복되면 무거워짐',
+    message: '"~에 대한/대해" 남발. 반복되면 문장이 무거워짐',
     suggestion: '을·를로 처리하거나 생략',
     minRepeat: 2,
   },
@@ -128,7 +128,7 @@ export const REGEX_RULES: RegexRule[] = [
     category: 'D1',
     re: /(?:을|를) 통해/g,
     severity: 'low',
-    message: '"~을 통해". through의 직역. 남용 시 어색',
+    message: '"~을 통해" 남발. 남용 시 어색',
     suggestion: '"~로" 또는 "~에서"',
     minRepeat: 2,
   },
@@ -154,7 +154,7 @@ export const REGEX_RULES: RegexRule[] = [
     category: 'D1',
     re: /(?:에도|임에도|음에도) 불구하고/g,
     severity: 'medium',
-    message: '"에도 불구하고". despite의 직역. 남용 시 문장이 무거워짐',
+    message: '"에도 불구하고" 남발. 남용 시 문장이 무거워짐',
     suggestion: '"하지만"·"그래도"·역접 "는"으로 짧게',
   },
 
