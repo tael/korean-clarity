@@ -142,4 +142,12 @@ describe('analyze', () => {
       'non-whitelisted -적 still flagged at 3+',
     );
   });
+
+  it('D2 기본 메시지에 출신 낙인(직역)이 없고 두 축으로 읽힌다', () => {
+    const r = analyze('이 합성기는 입력을 처리합니다.');
+    const v = r.violations.find((x) => x.ruleId === 'D2.합성기');
+    assert.ok(v, 'D2.합성기 flagged');
+    assert.ok(!v!.message.includes('직역'), 'no 직역 origin-blaming in message');
+    assert.ok(!v!.message.includes('영어'), 'no 영어 origin-blaming in message');
+  });
 });

@@ -40,6 +40,8 @@ export interface LexiconEntry {
   word: string;
   natural?: string;
   contextSafe: string[];
+  /** 항목이 주면 이 메시지를 그대로 쓴다. 없으면 두 축 기본 템플릿. */
+  message?: string;
   severity: Severity;
 }
 
