@@ -20,6 +20,9 @@ jobs:
       - run: pnpm -F @korean-clarity/analyzer typecheck
       - run: pnpm -F @korean-clarity/analyzer test
       - run: pnpm -F @korean-clarity/analyzer build
+      # 프로즈 게이트: 사용자 대면 README가 AI냄새 임계를 넘으면 실패.
+      # docs/*.md는 클리셰 예시를 일부러 인용하므로 게이트 대상이 아님.
+      - run: pnpm -F @korean-clarity/analyzer lint:prose
       - run: pnpm -F @korean-clarity/web build
 
   deploy:

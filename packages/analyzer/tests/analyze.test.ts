@@ -179,4 +179,12 @@ describe('analyze', () => {
     assert.ok(!flag('양 갈래 머리를 땋았다'), '양 갈래 머리 not flagged');
     assert.ok(!flag('갈래길로 접어들었다'), '갈래길 not flagged');
   });
+
+  it('정보-식품 은유(신선한 정보·출처)를 잡는다', () => {
+    const f = (t: string) => analyze(t).violations.some((v) => v.ruleId === 'D1.fresh_info');
+    assert.ok(f('가장 신선한 출처에서 가져왔다'), '신선한 출처 flagged');
+    assert.ok(f('더 신선한 정보가 필요하다'), '신선한 정보 flagged');
+    assert.ok(!f('신선한 채소를 샀다'), '신선한 채소 not flagged');
+    assert.ok(!f('공기가 신선하다'), '신선한 서술 not flagged');
+  });
 });

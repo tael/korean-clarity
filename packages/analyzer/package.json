@@ -16,13 +16,18 @@
       "types": "./dist/rules.d.ts"
     }
   },
+  "bin": {
+    "korean-clarity": "./dist/cli.js"
+  },
   "files": ["dist", "src", "data"],
   "scripts": {
     "build": "tsc",
-    "test": "node --test --import=tsx tests/analyze.test.ts tests/eval.test.ts tests/metrics.test.ts tests/fix.test.ts tests/prompt.test.ts",
-    "typecheck": "tsc --noEmit"
+    "test": "node --test --import=tsx tests/analyze.test.ts tests/eval.test.ts tests/metrics.test.ts tests/fix.test.ts tests/prompt.test.ts tests/cli.test.ts tests/eval-metrics.test.ts",
+    "typecheck": "tsc --noEmit",
+    "lint:prose": "tsx src/cli.ts --max-ai 60 --file ../../README.md"
   },
   "devDependencies": {
+    "@types/node": "^22.10.2",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2"
   },
