@@ -307,7 +307,7 @@ export const D2_LEXICON: LexiconEntry[] = [
   { word: '인식기', natural: '인식 모델', contextSafe: ['음성', '얼굴', '필기', '문자', '패턴', '이미지'], severity: 'low' },
   { word: '층위', natural: '단계·갈래', contextSafe: [], requiresAbstract: ['의미', '논의', '분석', '개념', '사고', '담론', '해석'], message: '"층위"는 추상을 층으로 쌓는 공간 은유. AI가 자주 쓰고, 단계인지 종류인지 뜻이 흐려짐', severity: 'low' },
   { word: '결', natural: '방향·성격', contextSafe: [], requiresAbstract: ['논의', '문제', '사안', '감정', '이야기', '의미', '주장'], message: '"결"을 추상 대상에 붙인 공간 은유. AI가 자주 쓰고, 방향인지 성격인지 모호해짐', severity: 'low' },
-  { word: '갈래', natural: '두 가지·둘로 나뉨', contextSafe: [], requiresAbstract: ['답', '의견', '입장', '해석', '논의', '방향', '가능성', '경우'], message: '"갈래"는 추상을 가지로 가르는 공간 은유. AI가 자주 쓰고, 그냥 "두 가지"면 또렷함', severity: 'low' },
+  { word: '갈래', natural: '둘·두 가지', contextSafe: ['머리', '머리카락', '길', '땋'], message: '"갈래"는 AI가 즐겨 쓰는 단어. 우리말은 보통 "둘·두 가지"면 충분하고, 갈래는 격식체 글에서만 도드라짐', severity: 'low' },
   { word: '지점', natural: '대목·부분', contextSafe: [], requiresAbstract: ['논의', '사고', '분석', '문제', '고민'], message: '"지점"을 추상 논의에 쓴 공간 은유. AI가 자주 쓰고, "대목·때"가 더 또렷함', severity: 'low' },
   { word: '축', natural: '기준·갈래', contextSafe: [], requiresAbstract: ['분석', '논의', '평가', '사고', '접근', '기준', '관점', '가치'], message: '"축"은 추상을 축으로 세우는 공간 은유. AI가 자주 쓰고, "기준·갈래"가 또렷함', severity: 'low' },
 ];
