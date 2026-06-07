@@ -157,6 +157,14 @@ export const REGEX_RULES: RegexRule[] = [
     message: '"에도 불구하고" 남발. 남용 시 문장이 무거워짐',
     suggestion: '"하지만"·"그래도"·역접 "는"으로 짧게',
   },
+  {
+    id: 'D1.fresh_info',
+    category: 'D1',
+    re: /신선한\s*(?:정보|자료|출처|소식|콘텐츠|뉴스|관점|시각|데이터)/g,
+    severity: 'low',
+    message: '"신선한 정보·출처"는 정보를 식품처럼 다루는 은유. AI 글에 잦고, "최근·새" 자료면 또렷함',
+    suggestion: '"가장 최근 자료"·"새 자료"·"최신 정보"로',
+  },
 
   {
     id: 'E.eui_chain',
