@@ -125,4 +125,21 @@ describe('analyze', () => {
       lastEnd = Math.max(lastEnd, v.span.end);
     }
   });
+
+  it('E.suffix_jeok skips 굳어진 -적 in excludeWords, still flags fresh ones', () => {
+    // 화이트리스트 3개(전략적·창의적·사회적) + 비화이트 1개(근본적) = 매칭 4건.
+    // excludeWords가 동작하면 앞 3건이 빠져 "근본적" 1건만 남고 minRepeat 3 미달로 통과.
+    // excludeWords가 없으면 4건 전부 잡혀 minRepeat을 채우므로 이 단언이 깨진다. 즉 이 테스트가 게이트를 격리한다.
+    const stuck = analyze('전략적인 판단과 창의적인 접근과 사회적인 합의, 그리고 근본적인 검토가 필요합니다.');
+    assert.ok(
+      !stuck.violations.some((v) => v.ruleId === 'E.suffix_jeok'),
+      'whitelisted -적 dropped before minRepeat; lone non-whitelisted stays under threshold',
+    );
+
+    const fresh = analyze('근본적인 재정의와 혁신적인 발상과 능동적으로 대응이 필요합니다.');
+    assert.ok(
+      fresh.violations.some((v) => v.ruleId === 'E.suffix_jeok'),
+      'non-whitelisted -적 still flagged at 3+',
+    );
+  });
 });
