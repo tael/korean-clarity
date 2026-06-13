@@ -6,7 +6,7 @@ import { LABELED } from './fixtures/labeled.js';
 // AI냄새 라벨 코퍼스로 분석기의 정밀도·재현율을 측정한다.
 // 예측 규칙: analyze().scores.ai >= THRESHOLD 이면 "AI냄새"로 예측.
 // 플로어는 관측치보다 낮게 잡아 회귀 가드로만 쓴다(트립와이어가 아니라).
-const THRESHOLD = 20;
+const THRESHOLD = 12;
 
 describe('eval metrics (precision/recall guard)', () => {
   it(`measures precision and recall at ai>=${THRESHOLD}`, () => {
@@ -41,8 +41,8 @@ describe('eval metrics (precision/recall guard)', () => {
 
     // 정밀도는 높게 지킨다 — 사람 글 오탐은 도구 신뢰에 치명적.
     assert.ok(precision >= 0.9, `정밀도 ${precision.toFixed(2)} < 0.9 (사람 글 오탐 증가)`);
-    // 재현율은 현재 천장이 낮다(미묘한 AI 글이 샘). 0.6 아래로 떨어지면 탐지가 후퇴한 것.
-    assert.ok(recall >= 0.6, `재현율 ${recall.toFixed(2)} < 0.6 (탐지 후퇴)`);
-    assert.ok(f1 >= 0.75, `F1 ${f1.toFixed(2)} < 0.75`);
+    // 경계 가드·동반어 확대로 재현율이 0.92까지 올랐다. 0.85 아래면 탐지가 후퇴한 것.
+    assert.ok(recall >= 0.85, `재현율 ${recall.toFixed(2)} < 0.85 (탐지 후퇴)`);
+    assert.ok(f1 >= 0.85, `F1 ${f1.toFixed(2)} < 0.85`);
   });
 });

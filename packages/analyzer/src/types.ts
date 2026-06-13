@@ -48,6 +48,12 @@ export interface LexiconEntry {
    * 공간 은유(층위·결·갈래·지점·축)에 쓴다.
    */
   requiresAbstract?: string[];
+  /**
+   * 단음절·짧은 한글 어휘의 부분 문자열 오탐 방지. true면 매칭이 한글 단어
+   * 내부(해결의 "결", 축구의 "축")일 때 건너뛴다. 앞에 한글이 붙거나, 뒤에
+   * 붙은 한글이 조사 초성이 아니면 복합어로 보고 제외한다.
+   */
+  boundary?: boolean;
   severity: Severity;
 }
 

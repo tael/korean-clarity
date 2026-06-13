@@ -85,11 +85,32 @@ export function runHaeyoCheck(text: string, mode: Mode): Violation[] {
   ];
 }
 
+// 조사·서술격·어미의 초성으로 쓰이는 한글 음절. 이게 뒤따르면 복합어가 아니라
+// 문법 형태소가 붙은 것으로 본다. 과/와는 결과·효과 오탐 탓에 일부러 뺀다(드문 "축과"는 미탐 감수).
+const PARTICLE_INITIALS = new Set([
+  '이', '가', '은', '는', '을', '를', '에', '의', '도', '만', '로', '으', // 조사
+  '다', '라', '네', '야', '죠', '요', // 서술격·어미 (갈래다, 갈래라, 갈래네)
+]);
+
+function isHangulSyllable(ch: string): boolean {
+  return ch >= '가' && ch <= '힣';
+}
+
+// 매칭이 더 긴 한글 단어의 일부인지 판단한다(해결의 "결", 축구의 "축").
+function isInsideHangulWord(text: string, idx: number, len: number): boolean {
+  const before = idx > 0 ? text[idx - 1]! : '';
+  const after = text[idx + len] ?? '';
+  if (isHangulSyllable(before)) return true; // 앞에 한글이 붙음: 복합어 (해결, 건축, 나무결)
+  if (isHangulSyllable(after) && !PARTICLE_INITIALS.has(after)) return true; // 뒤가 조사 초성이 아님 (결과, 축구)
+  return false;
+}
+
 export function runLexiconChecks(text: string, _mode: Mode): Violation[] {
   const out: Violation[] = [];
   for (const entry of D2_LEXICON) {
     let idx = -1;
     while ((idx = text.indexOf(entry.word, idx + 1)) !== -1) {
+      if (entry.boundary && isInsideHangulWord(text, idx, entry.word.length)) continue;
       const window = text.slice(Math.max(0, idx - 25), idx + entry.word.length + 25);
       const safe = entry.contextSafe.some((s) => window.includes(s));
       if (safe) continue;
