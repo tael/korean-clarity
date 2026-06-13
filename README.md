@@ -68,9 +68,27 @@ console.log(r.prescriptions);     // [{ title, body }, ...]
 const r2 = analyze('/api/analyze 합성기 보강', { mode: 'label' });
 ```
 
+## CLI로 사용
+
+`pnpm -F @korean-clarity/analyzer build` 후 `korean-clarity` 명령을 쓸 수 있다.
+
+```bash
+korean-clarity "이 솔루션의 핵심은 효율성을 극대화하는 것입니다"  # 텍스트 직접
+korean-clarity --file 글.md                                      # 파일
+cat 글.md | korean-clarity                                       # 표준 입력
+korean-clarity --file 글.md --json                               # JSON 출력
+korean-clarity --file README.md --max-ai 60                      # 게이트: 임계 넘으면 종료 코드 1
+```
+
+출력은 AI냄새·명료성 점수와 위반 목록이다. `--max-ai N`은 점수가 N을 넘으면 종료 코드 1을 돌려줘 CI에서 글의 AI냄새를 막는 관문으로 쓴다.
+
+### CI 프로즈 게이트
+
+이 저장소는 자기 도구를 자기 문서에 돌린다. `pnpm -F @korean-clarity/analyzer lint:prose`가 사용자 대면 README를 검사하고, AI냄새가 60을 넘으면 빌드를 실패시킨다. `docs/`는 클리셰 예시를 일부러 인용하므로 게이트에서 뺀다.
+
 ## 로드맵
 
-- **v0.1 (MVP)** ✅ — 룰 코어 + Astro 사이트 + 5장 지침 + 두 스킬 + 표본 회귀 테스트
+- **v0.1 (MVP)** ✅ — 룰 코어 + Astro 사이트 + 5장 지침 + 두 스킬 + 표본 회귀 테스트 + CLI + 정밀도/재현율 가드 + CI 프로즈 게이트
 - v0.2 — kiwi-wasm 형태소 분석. F 6지표 풀. 가중치 사람 평가 보정
 - v0.3 — 지침 사이트 풍부화. 스킬 npm publish. 어휘 사전 확장 (PR 워크플로)
 - v0.4 — LLM 후속 (사용자 키). 의미 부정합·맥락 어색 보강
