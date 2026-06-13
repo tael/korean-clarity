@@ -160,10 +160,19 @@ export const REGEX_RULES: RegexRule[] = [
   {
     id: 'D1.fresh_info',
     category: 'D1',
-    re: /신선한\s*(?:정보|자료|출처|소식|콘텐츠|뉴스|관점|시각|데이터)/g,
+    re: /신선한\s*(?:정보|자료|출처|소식|콘텐츠|뉴스|관점|시각|데이터|인사이트|발상|아이디어)/g,
     severity: 'low',
     message: '"신선한 정보·출처"는 정보를 식품처럼 다루는 은유. AI 글에 잦고, "최근·새" 자료면 또렷함',
     suggestion: '"가장 최근 자료"·"새 자료"·"최신 정보"로',
+  },
+  {
+    id: 'D1.data_flow',
+    category: 'D1',
+    // 동사형(흘러·흐른다)만 잡는다. "데이터 흐름"(명사)은 표준 기술 용어라 봐준다.
+    re: /(?:로그|데이터|정보|트래픽|이벤트|기록|메시지)[^.!?\n]{0,12}(?:흘러|흐른다|흐르고|흐르는|흐릅니다)/g,
+    severity: 'low',
+    message: '"데이터·로그가 흐른다"는 강물 은유. AI가 자주 쓰고, "쌓인다·기록된다"가 또렷함',
+    suggestion: '"~에 쌓인다"·"~에 기록된다"·"~로 들어간다"로',
   },
 
   {
@@ -313,9 +322,9 @@ export const D2_LEXICON: LexiconEntry[] = [
   { word: '생성기', natural: '제너레이터', contextSafe: ['난수', '신호', '전기', 'OTP', '토큰', '보고서'], severity: 'medium' },
   { word: '분류기', natural: '분류 모델', contextSafe: ['이메일', '문서', '텍스트', '스팸', '베이즈'], severity: 'low' },
   { word: '인식기', natural: '인식 모델', contextSafe: ['음성', '얼굴', '필기', '문자', '패턴', '이미지'], severity: 'low' },
-  { word: '층위', natural: '단계·갈래', contextSafe: [], requiresAbstract: ['의미', '논의', '분석', '개념', '사고', '담론', '해석'], message: '"층위"는 추상을 층으로 쌓는 공간 은유. AI가 자주 쓰고, 단계인지 종류인지 뜻이 흐려짐', severity: 'low' },
-  { word: '결', natural: '방향·성격', contextSafe: [], requiresAbstract: ['논의', '문제', '사안', '감정', '이야기', '의미', '주장'], message: '"결"을 추상 대상에 붙인 공간 은유. AI가 자주 쓰고, 방향인지 성격인지 모호해짐', severity: 'low' },
-  { word: '갈래', natural: '둘·두 가지', contextSafe: ['머리', '머리카락', '길', '땋'], message: '"갈래"는 AI가 즐겨 쓰는 단어. 우리말은 보통 "둘·두 가지"면 충분하고, 갈래는 격식체 글에서만 도드라짐', severity: 'low' },
-  { word: '지점', natural: '대목·부분', contextSafe: [], requiresAbstract: ['논의', '사고', '분석', '문제', '고민'], message: '"지점"을 추상 논의에 쓴 공간 은유. AI가 자주 쓰고, "대목·때"가 더 또렷함', severity: 'low' },
-  { word: '축', natural: '기준·갈래', contextSafe: [], requiresAbstract: ['분석', '논의', '평가', '사고', '접근', '기준', '관점', '가치'], message: '"축"은 추상을 축으로 세우는 공간 은유. AI가 자주 쓰고, "기준·갈래"가 또렷함', severity: 'low' },
+  { word: '층위', natural: '단계·갈래', contextSafe: [], requiresAbstract: ['의미', '논의', '분석', '개념', '사고', '담론', '해석'], message: '"층위"는 추상을 층으로 쌓는 공간 은유. AI가 자주 쓰고, 단계인지 종류인지 뜻이 흐려짐', boundary: true, severity: 'low' },
+  { word: '결', natural: '방향·성격', contextSafe: [], requiresAbstract: ['논의', '문제', '사안', '감정', '이야기', '의미', '주장'], message: '"결"을 추상 대상에 붙인 공간 은유. AI가 자주 쓰고, 방향인지 성격인지 모호해짐', boundary: true, severity: 'low' },
+  { word: '갈래', natural: '둘·두 가지', contextSafe: ['머리', '머리카락', '길', '땋'], message: '"갈래"는 AI가 즐겨 쓰는 단어. 우리말은 보통 "둘·두 가지"면 충분하고, 갈래는 격식체 글에서만 도드라짐', boundary: true, severity: 'low' },
+  { word: '지점', natural: '대목·부분', contextSafe: [], requiresAbstract: ['논의', '사고', '분석', '문제', '고민'], message: '"지점"을 추상 논의에 쓴 공간 은유. AI가 자주 쓰고, "대목·때"가 더 또렷함', boundary: true, severity: 'low' },
+  { word: '축', natural: '기준·갈래', contextSafe: [], requiresAbstract: ['분석', '논의', '평가', '사고', '접근', '기준', '관점', '가치', '근거', '환원', '측면'], message: '"축"은 추상을 축으로 세우는 공간 은유. AI가 자주 쓰고, "기준·갈래"가 또렷함', boundary: true, severity: 'low' },
 ];

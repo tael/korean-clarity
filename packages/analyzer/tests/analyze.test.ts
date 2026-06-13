@@ -187,4 +187,24 @@ describe('analyze', () => {
     assert.ok(!f('신선한 채소를 샀다'), '신선한 채소 not flagged');
     assert.ok(!f('공기가 신선하다'), '신선한 서술 not flagged');
   });
+
+  it('데이터-강물 은유(흐른다)는 잡고, 데이터 흐름(명사)은 봐준다', () => {
+    const f = (t: string) => analyze(t).violations.some((v) => v.ruleId === 'D1.data_flow');
+    assert.ok(f('로그가 다 거기로 흘러요'), '로그 흘러 flagged');
+    assert.ok(f('데이터가 그쪽으로 흐른다'), '데이터 흐른다 flagged');
+    assert.ok(!f('강물이 천천히 흐른다'), '강물 not flagged');
+    assert.ok(!f('데이터 흐름도를 그렸다'), '데이터 흐름(명사) not flagged');
+  });
+
+  it('단음절 어휘(결·축)가 복합어 안에서는 안 잡힌다(경계 가드)', () => {
+    const has = (t: string, id: string) => analyze(t).violations.some((v) => v.ruleId === id);
+    // 복합어 내부 → 미탐
+    assert.ok(!has('문제를 해결할 수 있다', 'D2.결'), '해결 not flagged');
+    assert.ok(!has('결과를 분석한다', 'D2.결'), '결과 not flagged');
+    assert.ok(!has('축구 경기를 분석한다', 'D2.축'), '축구 not flagged');
+    assert.ok(!has('건축 양식을 분석한다', 'D2.축'), '건축 not flagged');
+    // 독립 메타포 → 탐지
+    assert.ok(has('논의의 결이 다르다', 'D2.결'), '논의의 결 flagged');
+    assert.ok(has('이 문제를 두 축으로 환원한다', 'D2.축'), '두 축으로 환원 flagged');
+  });
 });
