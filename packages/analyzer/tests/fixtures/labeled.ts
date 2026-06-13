@@ -91,4 +91,60 @@ export const LABELED: LabeledSample[] = [
     text: '난 그 영화 별로였어. 중반까지는 괜찮았는데 결말이 좀 허무하더라.',
     isAiSmell: false,
   },
+
+  // 추가 AI냄새 (subtle/varied positive)
+  {
+    id: 'ai_meta_announce2',
+    text: '이번 글에서는 세 가지를 다뤄보겠습니다. 먼저 배경부터 살펴보겠습니다.',
+    isAiSmell: true,
+  },
+  {
+    id: 'ai_via_chain',
+    text: '데이터를 통해 인사이트를 도출하고, 분석을 통해 결론을 내립니다.',
+    isAiSmell: true,
+  },
+  {
+    id: 'ai_axis_reduce',
+    text: '이 문제를 두 축으로 환원하면 본질이 드러납니다.',
+    isAiSmell: true,
+    note: '축+환원 (이전엔 미탐, 동반어 확대로 탐지)',
+  },
+  {
+    id: 'ai_summative',
+    text: '정리하자면, 본 전략은 지속 가능한 성장의 토대를 제공한다고 할 수 있습니다.',
+    isAiSmell: true,
+  },
+  {
+    id: 'ai_contrast2',
+    text: '이것은 단순한 도구가 아니라 하나의 플랫폼입니다.',
+    isAiSmell: true,
+  },
+
+  // 추가 사람 글 (자연스러운 negative, 정밀도 스트레스)
+  {
+    id: 'human_email',
+    text: '안녕하세요. 첨부 파일 확인 부탁드립니다. 수정할 부분 있으면 회신 주세요.',
+    isAiSmell: false,
+  },
+  {
+    id: 'human_chat2',
+    text: '그거 봤어? 어제 경기 진짜 대박이었는데. 마지막에 역전했잖아.',
+    isAiSmell: false,
+  },
+  {
+    id: 'human_review',
+    text: '배터리는 하루 정도 가고 카메라는 어두운 데서 좀 약해요. 가격 생각하면 만족합니다.',
+    isAiSmell: false,
+  },
+  {
+    id: 'human_recipe',
+    text: '냄비에 물 500ml 붓고 끓으면 면을 넣고 4분 둡니다. 스프는 불 끄고 넣어요.',
+    isAiSmell: false,
+  },
+  {
+    id: 'human_can_do',
+    text: '이 방법으로 문제를 해결할 수 있습니다. 다만 시간이 좀 걸립니다.',
+    isAiSmell: false,
+    note: '정상 "할 수 있습니다" (가능형 과탐 함정)',
+  },
 ];
